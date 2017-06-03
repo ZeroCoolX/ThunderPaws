@@ -8,6 +8,7 @@ namespace UnityStandardAssets._2D {
         public float lookAheadFactor = 3;
         public float lookAheadReturnSpeed = 0.5f;
         public float lookAheadMoveThreshold = 0.1f;
+        //Threshold of camera movement down
         public float yPosClamp = -1;
 
         private float m_OffsetZ;

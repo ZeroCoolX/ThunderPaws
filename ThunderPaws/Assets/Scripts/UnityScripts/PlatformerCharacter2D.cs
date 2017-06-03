@@ -16,9 +16,6 @@ namespace UnityStandardAssets._2D
         [SerializeField]
         private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
 
-        [SerializeField]
-        string landingFootSoundName = "LandingFootsteps";
-
         private Transform m_GroundCheck;    // A position marking where to check if the player is grounded.
         const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
         private bool m_Grounded;            // Whether or not the player is grounded.
@@ -29,9 +26,9 @@ namespace UnityStandardAssets._2D
         private bool m_FacingRight = true;  // For determining which way the player is currently facing.
         private bool m_RightSideUp = true;  //  for determining if the arm should be inverted for left vs right direction
 
-        private Transform playerGraphics;   //REference to the player graphics so we can change direction ourself
+        private Transform playerGraphics;   //Reference to the player graphics so we can change direction ourself
 
-        public Transform playerArm;        //ref to the arm used for roataion determined facing
+        public Transform playerArm;        //ref to the arm used for roataion determined facing - free from the body graphics
 
         private void Awake() {
             // Setting up references.
