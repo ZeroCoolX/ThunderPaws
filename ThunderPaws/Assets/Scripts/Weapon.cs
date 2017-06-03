@@ -75,7 +75,6 @@ public class Weapon : MonoBehaviour {
 
         //generate bullet effect
         if (Time.time >= timeToSpawnEffect) {
-            Debug.Log("Time to spawn is less than time");
             //bullet effect position data
             Vector3 hitPosition;
             Vector3 hitNormal;
@@ -94,10 +93,8 @@ public class Weapon : MonoBehaviour {
     }
 
     void GenerateEffect(Vector3 hitPos, Vector3 hitNormal) {
-        Debug.Log("Generating effect");
         //Generate hit Particles
         if(hitNormal != new Vector3(999, 999, 999)) {
-            Debug.Log("Generating particles");
             //we actually hit something
             //mask it so when we hit something the particles shoot OUT from it.
             Transform hitParticles = Instantiate(hitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, hitNormal)) as Transform;
@@ -105,18 +102,16 @@ public class Weapon : MonoBehaviour {
             Destroy(hitParticles.gameObject, 1f);
         }
 
-        Debug.Log("Generating muzzleflash hit normal = " + hitNormal);
         //Generate muzzleFlash
         Transform muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation) as Transform;
         //parent to firepoint
         muzzleFlash.parent = firePoint;
         //randomize its size a bit
-        float size = Random.Range(0.4f, 0.7f);
+        float size = Random.Range(0.2f, 0.5f);
         muzzleFlash.localScale = new Vector3(size, size, size);
         //Destroy muzzle flash
         Destroy(muzzleFlash.gameObject, 0.035f);//TODO: this looks laaggy. idk why its so fast on destruction. had to make it 0.035 instead of desired 0.02
 
-        Debug.Log("Generating bullet trail");
         //Generate bullet trail
         Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
         LineRenderer lr = trail.GetComponent<LineRenderer>();
@@ -124,8 +119,6 @@ public class Weapon : MonoBehaviour {
         if (lr != null) {
             lr.SetPosition(0, firePoint.position);//start position index
             lr.SetPosition(1, hitPos);//end position index
-        } else {
-            Debug.LogError("WARNING! LineRenderer is null!!");
         }
         Destroy(trail.gameObject, 0.035f);//TODO: this looks laaggy. idk why its so fast on destruction. had to make it 0.035 instead of desired 0.02
 
