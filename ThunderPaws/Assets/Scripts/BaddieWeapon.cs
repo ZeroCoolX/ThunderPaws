@@ -5,6 +5,8 @@ using UnityEngine;
 public class BaddieWeapon : MonoBehaviour {//MASSIVE TODO: just like the weapon, extract that into an abstract weapon script - cuz the shoot, and generate effect methods are identical.
 
     private BaddieAI baddieAI;
+    public float shotYMutatorLow = 0.5f;
+    public float shotYMutatorHigh = 1.5f;
 
     [Header("Attributes")]
     //how fast the weapon can shoot per second in addition to the first click
@@ -46,10 +48,17 @@ public class BaddieWeapon : MonoBehaviour {//MASSIVE TODO: just like the weapon,
             }
     }
 
+    //Uses the defined high and low values to get a random number between them multiplied by either 1 or -1 for high shots or low shots
+    private float GetShotMutator() {
+        return (Random.Range(shotYMutatorLow, shotYMutatorHigh) * (Random.Range(0,2)*2-1));
+
+    }
+
     //fire a projectile
     private void Shoot() {
         //store mouse position (B)
-        Vector2 targetPosition = new Vector2(baddieAI.target.position.x, baddieAI.target.position.y);//change this to targets position
+        Vector2 targetPosition = new Vector2(baddieAI.target.position.x, baddieAI.target.position.y + GetShotMutator());//change this to targets position
+        Debug.Log("baddieAI.target.position.y = " + baddieAI.target.position.y + " and random mutator = " + targetPosition.y);
         //store bullet origin spawn popint (A)
         Vector2 firePointPosition = new Vector2(firePoint.position.x, firePoint.position.y);
         //collect the hit data - distance and direction from A -> B
