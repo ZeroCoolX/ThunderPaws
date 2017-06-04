@@ -4,23 +4,26 @@ using UnityEngine;
 
 public class BaddieAI : MonoBehaviour {
 
+    //will most always be the player
     public Transform target;
     private string _targetTag = "Player";
+
+    //mechanics of movement
     public float turnSpeed = 10f;
     public Transform armRotationAxis;
     private bool _armIsLeft = false;
 
-    public enum BaddieState { NEUTRAL=0, WARN=1, DANGER=2};
+    //determines the actions taken
+    public enum BaddieState { NEUTRAL=0, ATTACK=1};
+    private BaddieState _state;
+    public BaddieState state { get { return _state; } }
 
-    private BaddieState state;
-
-    [Header("General")]
+    [Header("Ranges")]
     // x > 15 baddie won't be able to see player
-    public float warningRange = 7f;   //baddie will notice, but not care
-    public float dangerRange = 4f;  //baddie will attack on site
+    public float dangerRange = 10f;  //baddie will attack on site
 
     private void Awake() {
-        state = BaddieState.NEUTRAL;
+        _state = BaddieState.NEUTRAL;
     }
 
     private void Start() {
@@ -34,36 +37,30 @@ public class BaddieAI : MonoBehaviour {
             return;
         }
 
-        if(state == BaddieState.WARN || state == BaddieState.DANGER) {
+        if(_state == BaddieState.ATTACK) {
             LockOnTarget();
         }
 
-        switch (state) {
+        //Just for now TODO: change this 
+        switch (_state) {
             case BaddieState.NEUTRAL:
                 gameObject.GetComponent<SpriteRenderer>().color = Color.white;
                 break;
-            case BaddieState.WARN:
+            case BaddieState.ATTACK:
                 gameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
-                break;
-            case BaddieState.DANGER:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.red;
                 break;
         }
     }
 
     private void UpdateState() {
-        //get the player object
         //get the distance between them
         float distanceToTarget = transform.position.x - target.transform.position.x;
         if(target != null) {
-            if(distanceToTarget <= dangerRange) {
+            if(Mathf.Abs(distanceToTarget) <= dangerRange) {
                 //attack!
-                state = BaddieState.DANGER;
-            }else if(distanceToTarget <= warningRange) {
-                //notice
-                state = BaddieState.WARN;
+                _state = BaddieState.ATTACK;
             } else {
-                state = BaddieState.NEUTRAL;
+                _state = BaddieState.NEUTRAL;
             }
         }
     }
