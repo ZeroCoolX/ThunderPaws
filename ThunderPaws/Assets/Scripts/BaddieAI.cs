@@ -7,6 +7,8 @@ public class BaddieAI : MonoBehaviour {
     public Transform target;
     private string _targetTag = "Player";
     public float turnSpeed = 10f;
+    public Transform armRotationAxis;
+    private bool _armIsLeft = false;
 
     public enum BaddieState { NEUTRAL=0, WARN=1, DANGER=2};
 
@@ -32,17 +34,19 @@ public class BaddieAI : MonoBehaviour {
             return;
         }
 
-        //LockOnTarget();
+        if(state == BaddieState.WARN || state == BaddieState.DANGER) {
+            LockOnTarget();
+        }
 
         switch (state) {
             case BaddieState.NEUTRAL:
-                gameObject.GetComponent<Renderer>().material.color = Color.white;
+                gameObject.GetComponent<SpriteRenderer>().color = Color.white;
                 break;
             case BaddieState.WARN:
-                gameObject.GetComponent<Renderer>().material.color = Color.yellow;
+                gameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
                 break;
             case BaddieState.DANGER:
-                gameObject.GetComponent<Renderer>().material.color = Color.red;
+                gameObject.GetComponent<SpriteRenderer>().color = Color.red;
                 break;
         }
     }
@@ -62,10 +66,38 @@ public class BaddieAI : MonoBehaviour {
                 state = BaddieState.NEUTRAL;
             }
         }
-
     }
 
+    private void LockOnTarget() {
+        //rotate left or right to face target
+        float faceDir = target.position.x - transform.position.x;
+        transform.rotation = Quaternion.Euler(0f, faceDir <= 0 ? -180f : 360f, 0f);
 
+        Vector3 diff = target.position - armRotationAxis.position;
+        //Normalize the vector x + y + z = 1
+        diff.Normalize();
+        //find the angle in degrees
+        float rotZ = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
+        //apply the rotation
+        armRotationAxis.rotation = Quaternion.Euler(0f, 0f, rotZ);//degrees not radians
+
+        //invert the arm only iff necessary
+        if (faceDir <= 0 && !_armIsLeft) {
+            InvertArm();
+        }else if(_armIsLeft && faceDir > 0) {
+            InvertArm();
+        }
+    }
+
+    private void InvertArm() {
+        //switch the way the arm is labeled as facing
+        _armIsLeft = !_armIsLeft;
+
+        // Multiply the player's x local scale by -1.
+        Vector3 theScale = armRotationAxis.localScale;
+        theScale.y *= -1;
+        armRotationAxis.localScale = theScale;
+    }
 
 
 
