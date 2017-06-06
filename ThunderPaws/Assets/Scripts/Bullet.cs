@@ -22,7 +22,6 @@ public class Bullet : MonoBehaviour {
         if (shouldFire) {
             Vector3 dir = _targetPos - transform.position;
             float distanceThisFrame =  moveSpeed * Time.deltaTime;
-            Debug.Log("target : " + _targetPos + " and dir.mag : " + dir.magnitude + " and distanceThisFrame : " + distanceThisFrame);
             //length of dir is distance to target. if thats less than distancethisframe we've already hit the target
             if (dir.magnitude <= distanceThisFrame) {
                 HitTarget();
