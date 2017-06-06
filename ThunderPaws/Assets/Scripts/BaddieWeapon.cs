@@ -55,10 +55,9 @@ public class BaddieWeapon : MonoBehaviour {//MASSIVE TODO: just like the weapon,
     }
 
     //fire a projectile
-    private void Shoot() {
+    private void Shoot() {//TODO: Maybe the baddies actually shouldn't be hitscan...how could the player EVER dodge. idk.
         //store mouse position (B)
-        Vector2 targetPosition = new Vector2(baddieAI.target.position.x, baddieAI.target.position.y + GetShotMutator());//change this to targets position
-        Debug.Log("baddieAI.target.position.y = " + baddieAI.target.position.y + " and random mutator = " + targetPosition.y);
+        Vector2 targetPosition = new Vector2(baddieAI.target.position.x, baddieAI.target.position.y /*+ GetShotMutator()*/);//TODO: not really a todo but since we're now doing projectile, we don't need this since the player can dodge
         //store bullet origin spawn popint (A)
         Vector2 firePointPosition = new Vector2(firePoint.position.x, firePoint.position.y);
         //collect the hit data - distance and direction from A -> B
@@ -93,14 +92,10 @@ public class BaddieWeapon : MonoBehaviour {//MASSIVE TODO: just like the weapon,
     }
 
     void GenerateEffect(Vector3 hitPos, Vector3 hitNormal) {//probably keep this
-        //Generate hit Particles
-        if (hitNormal != new Vector3(999, 999, 999)) {
-            //we actually hit something
-            //mask it so when we hit something the particles shoot OUT from it.
-            Transform hitParticles = Instantiate(hitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, hitNormal)) as Transform;
-            //Destroy hit particles
-            Destroy(hitParticles.gameObject, 1f);
-        }
+        //fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
+        Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
+        Bullet bullet = trail.GetComponent<Bullet>();
+        bullet.Fire(hitPos, hitNormal);
 
         //Generate muzzleFlash
         Transform muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation) as Transform;
@@ -111,16 +106,6 @@ public class BaddieWeapon : MonoBehaviour {//MASSIVE TODO: just like the weapon,
         muzzleFlash.localScale = new Vector3(size, size, size);
         //Destroy muzzle flash
         Destroy(muzzleFlash.gameObject, 0.035f);//TODO: this looks laaggy. idk why its so fast on destruction. had to make it 0.035 instead of desired 0.02
-
-        //Generate bullet trail
-        Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
-        LineRenderer lr = trail.GetComponent<LineRenderer>();
-        //allows the bullet trail to stop where the collision happenned
-        if (lr != null) {
-            lr.SetPosition(0, firePoint.position);//start position index
-            lr.SetPosition(1, hitPos);//end position index
-        }
-        Destroy(trail.gameObject, 0.035f);//TODO: this looks laaggy. idk why its so fast on destruction. had to make it 0.035 instead of desired 0.02
 
         //TODO: generate audio
     }

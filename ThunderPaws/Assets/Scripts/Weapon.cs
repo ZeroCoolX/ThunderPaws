@@ -83,7 +83,8 @@ public class Weapon : MonoBehaviour {//TODO: Turn this into an abstract class, t
                 hitPosition = (mousePosition - firePointPosition) * 30; //arbitrarily laarge number so the bullet trail flys off the camera
                 hitNormal = new Vector3(999, 999, 999); //rediculously huge so we can use it as a sanity check for the effect
             } else {//we hit something
-                hitPosition = hit.point;//exactly where the collision occured
+                //exactly where the collision occured
+                hitPosition = hit.point;
                 hitNormal = hit.normal;
             }
             //actually instantiate the effect
@@ -93,14 +94,10 @@ public class Weapon : MonoBehaviour {//TODO: Turn this into an abstract class, t
     }
 
     void GenerateEffect(Vector3 hitPos, Vector3 hitNormal) {
-        //Generate hit Particles
-        if(hitNormal != new Vector3(999, 999, 999)) {
-            //we actually hit something
-            //mask it so when we hit something the particles shoot OUT from it.
-            Transform hitParticles = Instantiate(hitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, hitNormal)) as Transform;
-            //Destroy hit particles
-            Destroy(hitParticles.gameObject, 1f);
-        }
+        //fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
+        Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
+        Bullet bullet = trail.GetComponent<Bullet>();
+        bullet.Fire(hitPos, hitNormal);
 
         //Generate muzzleFlash
         Transform muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation) as Transform;
@@ -111,16 +108,6 @@ public class Weapon : MonoBehaviour {//TODO: Turn this into an abstract class, t
         muzzleFlash.localScale = new Vector3(size, size, size);
         //Destroy muzzle flash
         Destroy(muzzleFlash.gameObject, 0.035f);//TODO: this looks laaggy. idk why its so fast on destruction. had to make it 0.035 instead of desired 0.02
-
-        //Generate bullet trail
-        Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
-        LineRenderer lr = trail.GetComponent<LineRenderer>();
-        //allows the bullet trail to stop where the collision happenned
-        if (lr != null) {
-            lr.SetPosition(0, firePoint.position);//start position index
-            lr.SetPosition(1, hitPos);//end position index
-        }
-        Destroy(trail.gameObject, 0.035f);//TODO: this looks laaggy. idk why its so fast on destruction. had to make it 0.035 instead of desired 0.02
 
         //Generate camera shake
         _camShake.Shake(camShakeAmount, camShakeLength);
