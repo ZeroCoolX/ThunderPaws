@@ -14,6 +14,8 @@ public class Bullet : MonoBehaviour {
 
     public Transform hitPrefab;
 
+    public LayerMask whatToHit;
+
     //Make sure we have a bullet visually
     private void Start() {
         if(hitPrefab == null) {
@@ -22,6 +24,29 @@ public class Bullet : MonoBehaviour {
     }
 
     void Update () {
+        //Raycast to check if we could potentially the target
+        RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, _targetPos - transform.position);
+        if (possibleHit.collider != null){
+            //Mini raycast to check handle ellusive targets
+            RaycastHit2D distCheck = Physics2D.Raycast(transform.position, _targetPos - transform.position, 0.2f, whatToHit);
+            if (distCheck.collider != null) {
+                HitTarget(transform.position);
+                return;
+            }
+
+            //Last check is simplest check
+            Vector3 dir = _targetPos - transform.position;
+            float distanceThisFrame = moveSpeed * Time.deltaTime;
+            //length of dir is distance to target. if thats less than distancethisframe we've already hit the target
+            if (dir.magnitude <= distanceThisFrame) {
+                //Make sure the player didn't dodge out of the way
+                distCheck = Physics2D.Raycast(transform.position, _targetPos - transform.position, 0.2f, whatToHit);
+                if (distCheck.collider != null) {
+                    HitTarget(transform.position);
+                    return;
+                }
+            }
+        }
         //move as a constant speed
         transform.Translate(_targetDirection.normalized * moveSpeed * Time.deltaTime, Space.World);
     }
@@ -38,34 +63,10 @@ public class Bullet : MonoBehaviour {
         _targetDirection = _targetPos - transform.position;
     }
 
-    //We've hit something! - destroy with particle effects and do the required damage
-    private void OnTriggerEnter2D(Collider2D collision) {
-        switch (collision.gameObject.tag) {
-            case "Player":
-                if (gameObject.tag != "Player") {//don't hit ourselves
-                    HitTarget();
-                    Debug.Log("DAMAGE PLAYER");
-                }
-                break;
-            case "BADDIE":
-                if(gameObject.tag != "BADDIE") {//no baddie friendly fire
-                    HitTarget();
-                    Debug.Log("DAMAGE BADDIE");
-                }
-                break;
-            case "ENVIROMENT":
-                HitTarget();
-                Debug.Log("Hit enviroment");
-                break;
-            default:
-                break;
-        }
-    }
-
     //Destroy and generate effects
-    public void HitTarget() {
+    public void HitTarget(Vector3 hitPos) {
         //mask it so when we hit something the particles shoot OUT from it.
-        Transform hitParticles = Instantiate(hitPrefab, _targetPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
+        Transform hitParticles = Instantiate(hitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
         //Destroy hit particles
         Destroy(hitParticles.gameObject, 1f);
         Destroy(gameObject);

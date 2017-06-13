@@ -2,75 +2,45 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaddieWeapon : MonoBehaviour {//MASSIVE TODO: just like the weapon, extract that into an abstract weapon script - cuz the shoot, and generate effect methods are identical.
-
-    private BaddieAI baddieAI;
+public class BaddieWeapon : AbstractWeapon {
+    [Header("Mutator Attributes")]
     public float shotYMutatorLow = 0.5f;
     public float shotYMutatorHigh = 1.5f;
+    private BaddieAI baddieAI;
 
-    [Header("Attributes")]
-    //how fast the weapon can shoot per second in addition to the first click
-    public float fireRate = 0f; //0 is single shot, 0 > is machine gun-esc
-    //how much damage it does
-    public int Damage = 10;
-    public LayerMask whatToHit;
-
-    [Header("Effects")]
-    //bullet graphics
-    public Transform bulletTrailPrefab;
-    public Transform hitPrefab;
-    public Transform muzzleFlashPrefab;
-    public Transform firePoint;//where the bulklet will spawn
-
-    [Header("TimeAttributes")]
-    //graphics spawning
-    public float timeToSpawnEffect = 0f;
-    public float effectSpawnRate = 10f;
-    //delay between firing
-    private float _timeToFire = 0f;
-
-
-    private void Start() {
-        if (firePoint == null) {
-            Debug.LogError("Weapon.cs: No firePoint found");
-        }
+    protected void Start() {
+        base.Start();
         baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
         if(baddieAI == null) {
             Debug.LogError("Weapon.cs: No BaddieAI script found on Baddie");
         }
     }
 
-    private void Update() {//Change
-            if (baddieAI.state == BaddieAI.BaddieState.ATTACK && Time.time > _timeToFire) {//if the target is within the killzone, shoot
-                //update time to fire
-                _timeToFire = Time.time + 1 / fireRate;
-                Shoot();
-            }
+    private void Update() {
+        //if the target is within the killzone, shoot
+        if (baddieAI.state == BaddieAI.BaddieState.ATTACK && Time.time > _timeToFire) {//TODO: more intelligent ai
+            //update time to fire
+            _timeToFire = Time.time + 1 / fireRate;
+            Shoot();
+        }
     }
 
     //Uses the defined high and low values to get a random number between them multiplied by either 1 or -1 for high shots or low shots
+    //Useful - but not atm
     private float GetShotMutator() {
         return (Random.Range(shotYMutatorLow, shotYMutatorHigh) * (Random.Range(0,2)*2-1));
 
     }
 
     //fire a projectile
-    private void Shoot() {//TODO: Maybe the baddies actually shouldn't be hitscan...how could the player EVER dodge. idk.
+    private void Shoot() {
         //store mouse position (B)
-        Vector2 targetPosition = new Vector2(baddieAI.target.position.x, baddieAI.target.position.y /*+ GetShotMutator()*/);//TODO: not really a todo but since we're now doing projectile, we don't need this since the player can dodge
+        Vector2 targetPosition = new Vector2(baddieAI.target.position.x, baddieAI.target.position.y /*+ GetShotMutator()*/);
         //store bullet origin spawn popint (A)
         Vector2 firePointPosition = new Vector2(firePoint.position.x, firePoint.position.y);
         //collect the hit data - distance and direction from A -> B
-        RaycastHit2D hit = Physics2D.Raycast(firePointPosition, targetPosition - firePointPosition, 100, whatToHit);
+        RaycastHit2D shot = Physics2D.Raycast(firePointPosition, targetPosition - firePointPosition, 100, whatToHit);
 
-        //the bullet fires off into the direction not stopping where the mouse it
-        //draw a line for testing
-        Debug.DrawLine(firePointPosition, (targetPosition - firePointPosition) * 100, Color.cyan);
-        if (hit.collider != null) {
-            //draw a line for testing
-            Debug.DrawLine(firePointPosition, hit.point, Color.red);
-            //check for baddie hits and damage them
-        }
 
         //generate bullet effect
         if (Time.time >= timeToSpawnEffect) {
@@ -78,36 +48,18 @@ public class BaddieWeapon : MonoBehaviour {//MASSIVE TODO: just like the weapon,
             Vector3 hitPosition;
             Vector3 hitNormal;
 
-            if (hit.collider == null) {//we didn't hit anything within the definet layerMask
-                hitPosition = (targetPosition - firePointPosition) * 30; //arbitrarily laarge number so the bullet trail flys off the camera
+            hitPosition = (targetPosition - firePointPosition) * 100; //arbitrarily large number so the bullet trail flys off the camera
+            if (shot.collider != null) {
+                hitNormal = shot.normal;//if we most likely hit something store the normal so the particles make sense when they shoot out
+                hitPosition = shot.point;
+            } else {
                 hitNormal = new Vector3(999, 999, 999); //rediculously huge so we can use it as a sanity check for the effect
-            } else {//we hit something
-                hitPosition = hit.point;//exactly where the collision occured
-                hitNormal = hit.normal;
             }
+
             //actually instantiate the effect
             GenerateEffect(hitPosition, hitNormal);
             timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
         }
-    }
-
-    void GenerateEffect(Vector3 hitPos, Vector3 hitNormal) {//probably keep this
-        //fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
-        Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
-        Bullet bullet = trail.GetComponent<Bullet>();
-        bullet.Fire(hitPos, hitNormal);
-
-        //Generate muzzleFlash
-        Transform muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation) as Transform;
-        //parent to firepoint
-        muzzleFlash.parent = firePoint;
-        //randomize its size a bit
-        float size = Random.Range(0.2f, 0.5f);
-        muzzleFlash.localScale = new Vector3(size, size, size);
-        //Destroy muzzle flash
-        Destroy(muzzleFlash.gameObject, 0.035f);//TODO: this looks laaggy. idk why its so fast on destruction. had to make it 0.035 instead of desired 0.02
-
-        //TODO: generate audio
     }
 
 }
