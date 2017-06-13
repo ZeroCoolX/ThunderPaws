@@ -4,42 +4,65 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour {
 
+    //how fast the bullet travels
     public float moveSpeed = 10f;
-    private bool shouldFire = false;
+
+    //precalculated values necessary for determining how to spray the particles, where we THINK the collision will take place, and in what direction to move the bullet
     private Vector3 _targetPos;
     private Vector3 _targetNormal;
+    private Vector3 _targetDirection;
 
     public Transform hitPrefab;
 
+    //Make sure we have a bullet visually
     private void Start() {
         if(hitPrefab == null) {
             Debug.LogError("No HitPrefab was found on bullet");
         }
     }
 
-    // Update is called once per frame
     void Update () {
-        if (shouldFire) {
-            Vector3 dir = _targetPos - transform.position;
-            float distanceThisFrame =  moveSpeed * Time.deltaTime;
-            //length of dir is distance to target. if thats less than distancethisframe we've already hit the target
-            if (dir.magnitude <= distanceThisFrame) {
-                HitTarget();
-                return;
-            }
-
-            //move as a constant speed
-            transform.Translate(dir.normalized * distanceThisFrame, Space.World);
-        }
+        //move as a constant speed
+        transform.Translate(_targetDirection.normalized * moveSpeed * Time.deltaTime, Space.World);
     }
-    
-    //tell the update statement to move the bullet
+
+    //Once the bullet leaves the Cameras viewport destroy it
+    void OnBecameInvisible() {
+        Destroy(gameObject);
+    }
+
+    //Tell the update statement wwhere to move the bullet
     public void Fire(Vector3 targetPos, Vector3 targetNormal) {
-        shouldFire = true;
         _targetPos = targetPos;
         _targetNormal = targetNormal;
+        _targetDirection = _targetPos - transform.position;
     }
 
+    //We've hit something! - destroy with particle effects and do the required damage
+    private void OnTriggerEnter2D(Collider2D collision) {
+        switch (collision.gameObject.tag) {
+            case "Player":
+                if (gameObject.tag != "Player") {//don't hit ourselves
+                    HitTarget();
+                    Debug.Log("DAMAGE PLAYER");
+                }
+                break;
+            case "BADDIE":
+                if(gameObject.tag != "BADDIE") {//no baddie friendly fire
+                    HitTarget();
+                    Debug.Log("DAMAGE BADDIE");
+                }
+                break;
+            case "ENVIROMENT":
+                HitTarget();
+                Debug.Log("Hit enviroment");
+                break;
+            default:
+                break;
+        }
+    }
+
+    //Destroy and generate effects
     public void HitTarget() {
         //mask it so when we hit something the particles shoot OUT from it.
         Transform hitParticles = Instantiate(hitPrefab, _targetPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;

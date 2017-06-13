@@ -62,16 +62,16 @@ public class Weapon : MonoBehaviour {//TODO: Turn this into an abstract class, t
         //store bullet origin spawn popint (A)
         Vector2 firePointPosition = new Vector2(firePoint.position.x, firePoint.position.y);
         //collect the hit data - distance and direction from A -> B
-        RaycastHit2D hit = Physics2D.Raycast(firePointPosition, mousePosition - firePointPosition, 100, whatToHit);
+        RaycastHit2D shot = Physics2D.Raycast(firePointPosition, mousePosition - firePointPosition, 100, whatToHit);
 
         //the bullet fires off into the direction not stopping where the mouse it
         //draw a line for testing
-        Debug.DrawLine(firePointPosition, (mousePosition - firePointPosition) * 100, Color.cyan);
-        if (hit.collider != null) {
+    //    Debug.DrawLine(firePointPosition, (mousePosition - firePointPosition) * 100, Color.cyan);
+     //   if (shot.collider != null) {
             //draw a line for testing
-            Debug.DrawLine(firePointPosition, hit.point, Color.red);
+      //      Debug.DrawLine(firePointPosition, shot.point, Color.red);
             //check for baddie hits and damage them
-        }
+       // }
 
         //generate bullet effect
         if (Time.time >= timeToSpawnEffect) {
@@ -79,25 +79,32 @@ public class Weapon : MonoBehaviour {//TODO: Turn this into an abstract class, t
             Vector3 hitPosition;
             Vector3 hitNormal;
 
-            if (hit.collider == null) {//we didn't hit anything within the definet layerMask
-                hitPosition = (mousePosition - firePointPosition) * 30; //arbitrarily laarge number so the bullet trail flys off the camera
+            //precalculate so if we aren't shooting at anything at least the normal is correct - i think....
+          //  if (shot.collider == null) {//we didn't hit anything within the definet layerMask
+                hitPosition = (mousePosition - firePointPosition) * 100; //arbitrarily laarge number so the bullet trail flys off the camera
+            if (shot.collider != null) {
+                hitNormal = shot.normal;//if we most likely hit something store the normal so the particles make sense when they shoot out
+                hitPosition = shot.point;
+            } else {
                 hitNormal = new Vector3(999, 999, 999); //rediculously huge so we can use it as a sanity check for the effect
-            } else {//we hit something
-                //exactly where the collision occured
-                hitPosition = hit.point;
-                hitNormal = hit.normal;
             }
+            // } else {//we hit something
+            //exactly where the collision occured
+            //      hitPosition = shot.point;
+            //      hitNormal = shot.normal;
+            //   }
+
             //actually instantiate the effect
             GenerateEffect(hitPosition, hitNormal);
             timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
         }
     }
 
-    void GenerateEffect(Vector3 hitPos, Vector3 hitNormal) {
+    void GenerateEffect(Vector3 shotPos, Vector3 shotNormal) {
         //fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
         Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
         Bullet bullet = trail.GetComponent<Bullet>();
-        bullet.Fire(hitPos, hitNormal);
+        bullet.Fire(shotPos, shotNormal);//fire at the point clicked
 
         //Generate muzzleFlash
         Transform muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation) as Transform;
