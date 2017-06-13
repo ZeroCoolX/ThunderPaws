@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityStandardAssets._2D;
 
 [RequireComponent(typeof(Platformer2DUserControl))]
-public class Player : MonoBehaviour {//TODO: also flip the players colliders, for some reason that is not flipping...the baddies is however...
+public class Player : MonoBehaviour {
     //TODO: health and player stats
 
     //weapon refeerences to enable/disable based on user input

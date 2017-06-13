@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace UnityStandardAssets._2D
 {
+    //TODO: Fix the horizontal collisions - the player gets stuck on walls since technically hes colliding...which makes him like spiderman just sticking and "jumping" up walls which is not intended
     public class PlatformerCharacter2D : MonoBehaviour
     {
         [SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
@@ -23,6 +24,8 @@ namespace UnityStandardAssets._2D
         const float k_CeilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
         private Animator m_Anim;            // Reference to the player's animator component.
         private Rigidbody2D m_Rigidbody2D;
+        private CircleCollider2D m_CircleCollider;  //Reference the colliders so flipping the graphics also flips the colliders
+        private BoxCollider2D m_BoxCollider;        //Reference the colliders so flipping the graphics also flips the colliders
         private bool m_FacingRight = true;  // For determining which way the player is currently facing.
         private bool m_RightSideUp = true;  //  for determining if the arm should be inverted for left vs right direction
 
@@ -36,6 +39,8 @@ namespace UnityStandardAssets._2D
             m_CeilingCheck = transform.Find("CeilingCheck");
             m_Anim = GetComponent<Animator>();
             m_Rigidbody2D = GetComponent<Rigidbody2D>();
+            m_CircleCollider = GetComponent<CircleCollider2D>();
+            m_BoxCollider = GetComponent<BoxCollider2D>();
             playerGraphics = transform.FindChild("Graphics");
             if (playerGraphics == null) {
                 //couldn't find the graphics object
@@ -136,6 +141,18 @@ namespace UnityStandardAssets._2D
             Vector3 theScale = playerArm.localScale;
             theScale.y *= -1;
             playerArm.localScale = theScale;
+
+            //Also deal with the arm rotation axis offset since the graphics, arm, and colliders are all seperate.
+            //This 0.3 offset is because the pivot point on the graphics is dead center, but the arm is at the shoulder for a natural arm movement.
+            //The offset allows the arm to stay in place when left or right. Otherwise it jutts out when facing left because its flipping scale based on the rotational axis
+            if (theScale.y < 0f) {
+                theScale = playerArm.transform.localPosition;
+                theScale.x += 0.3f;
+            } else {
+                theScale = playerArm.transform.localPosition;
+                theScale.x -= 0.3f;
+            }
+            playerArm.transform.localPosition = theScale;
         }
     }
 }
