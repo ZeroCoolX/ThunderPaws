@@ -13,6 +13,8 @@ public class BaddieAI : MonoBehaviour {
     public Transform armRotationAxis;
     private bool _armIsLeft = false;
 
+    private bool _searchingForPlayer = false;
+
     //determines the actions taken
     public enum BaddieState { NEUTRAL=0, ATTACK=1};
     private BaddieState _state;
@@ -22,18 +24,31 @@ public class BaddieAI : MonoBehaviour {
     // x > 15 baddie won't be able to see player
     public float dangerRange = 10f;  //baddie will attack on site
 
+
     private void Awake() {
         _state = BaddieState.NEUTRAL;
     }
 
     private void Start() {
+        //Search for the target in game if there isn't one set - meaning he died and is respawning
+        if (target == null) {
+            //Player might be dead so search
+            if (!_searchingForPlayer) {//there is no target so search
+                CoolOffBaddie();
+            }
+            return;
+        }
+
         //twice a second look around for the target
         InvokeRepeating("UpdateState", 0f, 0.5f);
     }
 
     private void Update() {
         if(target == null) {
-            Debug.LogError("BaddieAI.cs: target is null!");
+            //Player might be dead so search
+            if (!_searchingForPlayer) {//there is no target so search
+                CoolOffBaddie();
+            }
             return;
         }
 
@@ -47,7 +62,7 @@ public class BaddieAI : MonoBehaviour {
                 gameObject.GetComponent<SpriteRenderer>().color = Color.white;
                 break;
             case BaddieState.ATTACK:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
+                gameObject.GetComponent<SpriteRenderer>().color = Color.red;
                 break;
         }
     }
@@ -63,6 +78,33 @@ public class BaddieAI : MonoBehaviour {
                 _state = BaddieState.NEUTRAL;
             }
         }
+    }
+
+    IEnumerator SearchForPlayer() {
+        //Search for the player
+        GameObject searchResult = GameObject.FindGameObjectWithTag("Player");
+        if(searchResult == null) {//search only twice a second until found
+            yield return new WaitForSeconds(0.5f);
+            StartCoroutine(SearchForPlayer());
+        }else {
+            //Found the player - set it as the target and stop searching and reinvoke the state updating
+            target = searchResult.transform;
+            _searchingForPlayer = false;
+            //twice a second look around for the target
+            InvokeRepeating("UpdateState", 0f, 0.5f);
+            yield break;
+        }
+    }
+
+    //When the target no longer exists in game - I.E. died, stop updaing states and shooting 
+    private void CoolOffBaddie() {
+        _searchingForPlayer = true;
+        //Tell the weapon to stop shooting
+        _state = BaddieState.NEUTRAL;
+        gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+        //Cancel the state update until we have a target to actually update our state for
+        CancelInvoke("UpdateState");
+        StartCoroutine(SearchForPlayer());
     }
 
     private void LockOnTarget() {

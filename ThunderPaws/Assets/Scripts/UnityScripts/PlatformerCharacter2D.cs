@@ -24,8 +24,6 @@ namespace UnityStandardAssets._2D
         const float k_CeilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
         private Animator m_Anim;            // Reference to the player's animator component.
         private Rigidbody2D m_Rigidbody2D;
-        private CircleCollider2D m_CircleCollider;  //Reference the colliders so flipping the graphics also flips the colliders
-        private BoxCollider2D m_BoxCollider;        //Reference the colliders so flipping the graphics also flips the colliders
         private bool m_FacingRight = true;  // For determining which way the player is currently facing.
         private bool m_RightSideUp = true;  //  for determining if the arm should be inverted for left vs right direction
 
@@ -39,8 +37,6 @@ namespace UnityStandardAssets._2D
             m_CeilingCheck = transform.Find("CeilingCheck");
             m_Anim = GetComponent<Animator>();
             m_Rigidbody2D = GetComponent<Rigidbody2D>();
-            m_CircleCollider = GetComponent<CircleCollider2D>();
-            m_BoxCollider = GetComponent<BoxCollider2D>();
             playerGraphics = transform.FindChild("Graphics");
             if (playerGraphics == null) {
                 //couldn't find the graphics object

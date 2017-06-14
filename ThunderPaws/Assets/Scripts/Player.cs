@@ -5,8 +5,9 @@ using UnityStandardAssets._2D;
 
 [RequireComponent(typeof(Platformer2DUserControl))]
 public class Player : MonoBehaviour {
-    //TODO: health and player stats
+    private PlayerStats _stats;
 
+    [Header("Weapons")]
     //weapon refeerences to enable/disable based on user input
     [SerializeField]
     private GameObject _machineGun; //2
@@ -14,6 +15,10 @@ public class Player : MonoBehaviour {
     private GameObject _pistol; //1
 
     private void Start() {
+        //set the player stats
+        _stats = PlayerStats.instance;
+        _stats.curHealth = _stats.maxHealth;
+
         //select the default weapon
         SelectWeapon(GameMaster.instance.weaponChoice);
         //Add the weapon switch method onto the weaponSwitch delegate
@@ -38,4 +43,21 @@ public class Player : MonoBehaviour {
             }
         }
     }
+
+    private void LifeCheck() {
+        if(_stats.curHealth <= 0) {
+            //The player has died
+            GameMaster.KillPlayer(this);
+        }else {
+            //not dead just hurt
+            //TODO: audio
+        }
+    }
+
+    public void DamageHealth(int dmg) {
+        //damage health and check for signs of life
+        _stats.curHealth -= dmg;
+        LifeCheck();
+    } 
+
 }
