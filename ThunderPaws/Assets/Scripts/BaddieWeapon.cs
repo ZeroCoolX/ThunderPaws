@@ -8,6 +8,8 @@ public class BaddieWeapon : AbstractWeapon {
     public float shotYMutatorHigh = 1.5f;
     private BaddieAI baddieAI;
 
+    public LayerMask whatToHit;
+
     protected void Start() {
         base.Start();
         baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
@@ -57,7 +59,7 @@ public class BaddieWeapon : AbstractWeapon {
             }
 
             //actually instantiate the effect
-            GenerateEffect(hitPosition, hitNormal);
+            GenerateEffect(hitPosition, hitNormal, whatToHit);
             timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
         }
     }

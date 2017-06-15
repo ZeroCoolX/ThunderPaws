@@ -10,7 +10,6 @@ public abstract class AbstractWeapon : MonoBehaviour {
     public float fireRate = 0f; //0 is single shot, 0 > is machine gun-esc
     //how much damage it does
     public int Damage = 10;
-    public LayerMask whatToHit;
 
     [Header("Abstract: Effects")]
     //bullet graphics
@@ -32,10 +31,13 @@ public abstract class AbstractWeapon : MonoBehaviour {
         }
     }
 
-    public virtual void GenerateEffect(Vector3 shotPos, Vector3 shotNormal) {
+    public virtual void GenerateEffect(Vector3 shotPos, Vector3 shotNormal, LayerMask whatToHit) {
         //fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
         Transform trail = Instantiate(bulletTrailPrefab, firePoint.position, firePoint.rotation) as Transform;
+        //parent the bullet to who shot it so we know what to hit (parents LayerMask whatToHit)
         Bullet bullet = trail.GetComponent<Bullet>();
+        //Set layermask of parent (either player or baddie)
+        bullet.SetLayerMask(whatToHit);
         bullet.Fire(shotPos, shotNormal);//fire at the point clicked
 
         //Generate muzzleFlash

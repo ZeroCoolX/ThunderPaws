@@ -16,8 +16,8 @@ public class Bullet : MonoBehaviour {
     private Vector3 _targetDirection;
 
     public Transform hitPrefab;
-
-    public LayerMask whatToHit;
+    [SerializeField]
+    private LayerMask whatToHit;
 
     //Make sure we have a bullet visually
     private void Start() {
@@ -57,6 +57,10 @@ public class Bullet : MonoBehaviour {
     //Once the bullet leaves the Cameras viewport destroy it
     void OnBecameInvisible() {
         Destroy(gameObject);
+    }
+
+    public void SetLayerMask(LayerMask parentLayerMask) {
+        whatToHit = parentLayerMask;
     }
 
     //Tell the update statement wwhere to move the bullet

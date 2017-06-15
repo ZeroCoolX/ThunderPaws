@@ -9,6 +9,8 @@ public class Weapon : AbstractWeapon {
     public float camShakeLength = 0.1f;
     private CameraShake _camShake;
 
+    public LayerMask whatToHit;
+
     protected void Start() {
         //Call parent abstract Start()
         base.Start();
@@ -57,7 +59,7 @@ public class Weapon : AbstractWeapon {
             }
 
             //actually instantiate the effect
-            GenerateEffect(hitPosition, hitNormal);
+            GenerateEffect(hitPosition, hitNormal, whatToHit);
             GenerateCamShake();
             timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
         }

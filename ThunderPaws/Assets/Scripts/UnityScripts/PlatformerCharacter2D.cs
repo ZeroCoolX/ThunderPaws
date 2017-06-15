@@ -9,6 +9,9 @@ namespace UnityStandardAssets._2D
     {
         [SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
         [SerializeField]
+        private float m_SlideMultiplier = 1.5f;
+        private float slideDuration = 0f;
+        [SerializeField]
         private float m_JumpForce = 400f;// Amount of force added when the player jumps.      
         [SerializeField]
         private float m_DoubleJumpImpulse = 15f; //Impulse to add for the mid air double jump
@@ -79,10 +82,25 @@ namespace UnityStandardAssets._2D
                     }
                 }
             }
+            //If we are actively sliding decrement the duration
+            //this ensures we dont reset the velocity while sliding until the slide is complete
+            if(slideDuration > 0f) {
+                Debug.Log("slide duration = " + slideDuration);
+                slideDuration -= (1 * Time.deltaTime);
+            }else {
+                slideDuration = 0f;
+            }
         }
 
 
-        public void Move(float move, bool crouch, bool jump) {
+        public void Move(float move, bool crouch, bool jump, bool slide, bool slideLeft) {
+            //TODO: Change slide so you probably have to be at least moving first - but for now allow sliding from a stand still
+            //Apply impulse in the direction they indicated
+            if (m_Grounded && slide && m_Rigidbody2D.velocity.x != 0f) {//Only slide if we're moving either left or right
+                m_Rigidbody2D.AddForce(new Vector2(m_MaxSpeed * m_SlideMultiplier * (m_Rigidbody2D.velocity.x > 0 ? 1 : -1), m_Rigidbody2D.velocity.y), ForceMode2D.Impulse);
+                slideDuration = 0.25f;
+            }
+
             // If crouching, check to see if the character can stand up
             if (!crouch && m_Anim.GetBool("Crouch")) {
                 // If the character has a ceiling preventing them from standing up, keep them crouching
@@ -102,8 +120,10 @@ namespace UnityStandardAssets._2D
                 // The Speed animator parameter is set to the absolute value of the horizontal input.
                 m_Anim.SetFloat("Speed", Mathf.Abs(move));
 
-                // Move the character
-                m_Rigidbody2D.velocity = new Vector2(move * m_MaxSpeed, m_Rigidbody2D.velocity.y);
+                // Move the character - but only if we're not actively sliding
+                if (slideDuration <= 0f) {
+                    m_Rigidbody2D.velocity = new Vector2(move * m_MaxSpeed, m_Rigidbody2D.velocity.y);
+                }
 
                 //Rotate the player based on direction pointing - its more natural
                 Vector3 diff = Camera.main.ScreenToWorldPoint(Input.mousePosition) - playerArm.position;
@@ -126,6 +146,7 @@ namespace UnityStandardAssets._2D
                 }
 
             }
+
             // If the player should jump...
             if (m_Grounded && jump && m_Anim.GetBool("Ground")) {
                 Jump(false);
