@@ -7,37 +7,38 @@ namespace UnityStandardAssets._2D
     //TODO: Fix the horizontal collisions - the player gets stuck on walls since technically hes colliding...which makes him like spiderman just sticking and "jumping" up walls which is not intended
     public class PlatformerCharacter2D : MonoBehaviour
     {
-        [SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
         [SerializeField]
-        private float m_SlideMultiplier = 1.5f;
-        private float slideDuration = 0f;
+        private float m_MaxSpeed = 10f;             // The fastest the player can travel in the x axis.
         [SerializeField]
-        private float m_JumpForce = 400f;// Amount of force added when the player jumps.      
+        private float m_SlideMultiplier = 1.5f;     // How fast the character moves when sliding
+        private float slideDuration = 0f;           // How long the slide lasts
         [SerializeField]
-        private float m_DoubleJumpImpulse = 15f; //Impulse to add for the mid air double jump
+        private float m_JumpForce = 400f;           // Amount of force added when the player jumps.      
         [SerializeField]
-        private bool m_DoubleJump;
+        private float m_DoubleJumpImpulse = 15f;    //Impulse to add for the mid air double jump
+        [SerializeField]
+        private bool m_DoubleJump;                  //indicates a double jump is happeneing
         [Range(0, 1)]
         [SerializeField]
-        private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
+        private float m_CrouchSpeed = .36f;         // Amount of maxSpeed applied to crouching movement. 1 = 100%
         [SerializeField]
-        private bool m_AirControl = false;                 // Whether or not a player can steer while jumping;
+        private bool m_AirControl = false;          // Whether or not a player can steer while jumping;
         [SerializeField]
-        private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
+        private LayerMask m_WhatIsGround;           // A mask determining what is ground to the character
 
-        private Transform m_GroundCheck;    // A position marking where to check if the player is grounded.
-        const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
-        private bool m_Grounded;            // Whether or not the player is grounded.
-        private Transform m_CeilingCheck;   // A position marking where to check for ceilings
-        const float k_CeilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
-        private Animator m_Anim;            // Reference to the player's animator component.
+        private Transform m_GroundCheck;            // A position marking where to check if the player is grounded.
+        const float k_GroundedRadius = .2f;         // Radius of the overlap circle to determine if grounded
+        private bool m_Grounded;                    // Whether or not the player is grounded.
+        private Transform m_CeilingCheck;           // A position marking where to check for ceilings
+        const float k_CeilingRadius = .01f;         // Radius of the overlap circle to determine if the player can stand up
+        private Animator m_Anim;                    // Reference to the player's animator component.
         private Rigidbody2D m_Rigidbody2D;
-        private bool m_FacingRight = true;  // For determining which way the player is currently facing.
-        private bool m_RightSideUp = true;  //  for determining if the arm should be inverted for left vs right direction
+        private bool m_FacingRight = true;          // For determining which way the player is currently facing.
+        private bool m_RightSideUp = true;          //  for determining if the arm should be inverted for left vs right direction
 
-        private Transform playerGraphics;   //Reference to the player graphics so we can change direction ourself
+        private Transform playerGraphics;           //Reference to the player graphics so we can change direction ourself
 
-        public Transform playerArm;        //ref to the arm used for roataion determined facing - free from the body graphics
+        public Transform playerArm;                 //ref to the arm used for roataion determined facing - free from the body graphics
 
         private void Awake() {
             // Setting up references.
@@ -85,7 +86,6 @@ namespace UnityStandardAssets._2D
             //If we are actively sliding decrement the duration
             //this ensures we dont reset the velocity while sliding until the slide is complete
             if(slideDuration > 0f) {
-                Debug.Log("slide duration = " + slideDuration);
                 slideDuration -= (1 * Time.deltaTime);
             }else {
                 slideDuration = 0f;
