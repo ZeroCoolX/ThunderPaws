@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityStandardAssets.CrossPlatformInput;
 
 namespace UnityStandardAssets._2D
 {
@@ -8,7 +9,11 @@ namespace UnityStandardAssets._2D
     {
         [SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
         [SerializeField]
-        private float m_JumpForce = 400f;                  // Amount of force added when the player jumps.
+        private float m_JumpForce = 400f;// Amount of force added when the player jumps.      
+        [SerializeField]
+        private float m_DoubleJumpImpulse = 15f; //Impulse to add for the mid air double jump
+        [SerializeField]
+        private bool m_DoubleJump;
         [Range(0, 1)]
         [SerializeField]
         private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
@@ -52,16 +57,28 @@ namespace UnityStandardAssets._2D
 
             // The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
             // This can be done using layers instead but Sample Assets will not overwrite your project settings.
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
+            Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);//TODO: do not collide with walls in regards to sliding down them unless wall climbing or grabbing
             for (int i = 0; i < colliders.Length; i++) {
                 if (colliders[i].gameObject != gameObject) {
                     m_Grounded = true;
+                    m_DoubleJump = false;
                 }
             }
             m_Anim.SetBool("Ground", m_Grounded);
 
             // Set the vertical animation
             m_Anim.SetFloat("vSpeed", m_Rigidbody2D.velocity.y);
+
+            //If we're still in the air, and the jump button is pressed perform another jump
+            if (!m_Grounded) {
+                if (!m_DoubleJump) {
+                    // Read the jump input in Update so button presses aren't missed.
+                    m_DoubleJump = CrossPlatformInputManager.GetButtonDown("Jump");
+                    if (m_DoubleJump) {
+                        Jump(true);//perform double jump
+                    }
+                }
+            }
         }
 
 
@@ -111,10 +128,18 @@ namespace UnityStandardAssets._2D
             }
             // If the player should jump...
             if (m_Grounded && jump && m_Anim.GetBool("Ground")) {
-                // Add a vertical force to the player.
-                m_Grounded = false;
-                m_Anim.SetBool("Ground", false);
-                m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+                Jump(false);
+            }
+        }
+
+        private void Jump(bool doubleJump) {
+            // Add a vertical force to the player.
+            m_Grounded = false;
+            m_Anim.SetBool("Ground", false);
+            if (doubleJump) {//if we're going upwards the velocity.y > 0 so subtract that from the impulse, otherwise we're going down < 0 so add to it - all about a consistent double jump
+                m_Rigidbody2D.AddForce(new Vector2(0f, m_DoubleJumpImpulse + (m_Rigidbody2D.velocity.y * -1f)), ForceMode2D.Impulse);
+            } else {
+                m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce), ForceMode2D.Force);
             }
         }
 
