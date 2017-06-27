@@ -42,6 +42,6 @@ public class CameraShake : MonoBehaviour {
     private void StopShake() {
         CancelInvoke("DoShake");
         //zero out the main camera objects transform which will just set it to where the parent is - which is following the player like always
-        mainCam.transform.localPosition = Vector3.zero;
+        mainCam.transform.localPosition = new Vector3(0f, 3f, 03);//account for y offset
     }
 }
