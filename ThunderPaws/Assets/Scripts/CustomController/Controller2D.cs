@@ -19,6 +19,7 @@ public class Controller2D : MonoBehaviour {
 
     BoxCollider2D collider;
     RaycastOrigins raycastOrigins;
+    public CollisionInfo collisions;
 
     private void Start() {
         collider = GetComponent<BoxCollider2D>();
@@ -28,6 +29,9 @@ public class Controller2D : MonoBehaviour {
     public void Move(Vector3 velocity) {
         //handle collisions
         UpdateRaycastOrigins();
+        //Blank slate each time
+        collisions.Reset();
+
         if(velocity.x != 0) {
             HorizontalCollisions(ref velocity);
         }
@@ -59,6 +63,10 @@ public class Controller2D : MonoBehaviour {
                 //set y velocity to the distance between where we fired, and where the raycast intersected with an obstacle
                 velocity.x = (hit.distance - skinWidth) * directionX;
                 rayLength = hit.distance;
+                
+                //if we hit something going left or right, store the info
+                collisions.left = directionX < 0;
+                collisions.right = directionX > 0;
             }
         }
     }
@@ -83,6 +91,10 @@ public class Controller2D : MonoBehaviour {
                 velocity.y = (hit.distance - skinWidth) * directionY;
                 //we change the ray length so that if there is a higher ledge on the left, but not the right, we dont pass through the higher point.
                 rayLength = hit.distance;
+
+                //if we hit something going up or down, store the info
+                collisions.below = directionY < 0;
+                collisions.above = directionY > 0;
             }
         }
     }
@@ -123,6 +135,16 @@ public class Controller2D : MonoBehaviour {
         return bounds;
     }
 
+
+    public struct CollisionInfo {
+        public bool above, below;
+        public bool left, right;
+
+        public void Reset() {
+            above = below = false;
+            left = right = false;
+        }
+    }
 
     //Stores all the corners of our box collider
     struct RaycastOrigins {
