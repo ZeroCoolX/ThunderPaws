@@ -10,6 +10,9 @@ public class Controller2D : MonoBehaviour {
     //used so when the character is resting on the ground its not floating or 100% just touching it. it looks more natural
     const float skinWidth = 0.015f;
 
+    //max angle we can run up or down without sliding
+    float maxClimbAngle = 80f;
+
     //how many rays are being fired horizontally and vertically
     public int horizontalRayCount = 4;
     public int verticalRayCount = 4;
@@ -31,14 +34,12 @@ public class Controller2D : MonoBehaviour {
         UpdateRaycastOrigins();
         //Blank slate each time
         collisions.Reset();
-
         if(velocity.x != 0) {
             HorizontalCollisions(ref velocity);
         }
         if (velocity.y != 0) {
             VerticalCollisions(ref velocity);
         }
-
         //Move the object
         transform.Translate(velocity);
     }
@@ -60,13 +61,35 @@ public class Controller2D : MonoBehaviour {
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
 
             if (hit) {
-                //set y velocity to the distance between where we fired, and where the raycast intersected with an obstacle
-                velocity.x = (hit.distance - skinWidth) * directionX;
-                rayLength = hit.distance;
-                
-                //if we hit something going left or right, store the info
-                collisions.left = directionX < 0;
-                collisions.right = directionX > 0;
+                //get the angle of the surface we hit
+                float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+                if(i == 0 && slopeAngle <= maxClimbAngle) {//bottom most ray
+                    float distanceToSlopeStart = 0;
+                    if(slopeAngle != collisions.slopeAngleOld) {//started climbing a new angle
+                        distanceToSlopeStart = hit.distance - skinWidth;
+                        //subtract so when we call ClimbSlop, it only uses velocity x it has when it reaches the slope
+                        velocity.x -= distanceToSlopeStart * directionX;
+                    }
+                    ClimbSlope(ref velocity, slopeAngle);
+                    //reset it
+                    velocity.x += distanceToSlopeStart * directionX;
+                }
+
+                //only check other rays if not climbing slope or slope angle > maxclimb angle
+                if(!collisions.climbingSlope || slopeAngle > maxClimbAngle) {
+                    //set y velocity to the distance between where we fired, and where the raycast intersected with an obstacle
+                    velocity.x = (hit.distance - skinWidth) * directionX;
+                    rayLength = hit.distance;
+
+                    //also update velocity on y axis
+                    if (collisions.climbingSlope) {
+                        velocity.y = Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad) * Mathf.Abs(velocity.x);
+                    }
+
+                    //if we hit something going left or right, store the info
+                    collisions.left = directionX < 0;
+                    collisions.right = directionX > 0;
+                }
             }
         }
     }
@@ -92,6 +115,11 @@ public class Controller2D : MonoBehaviour {
                 //we change the ray length so that if there is a higher ledge on the left, but not the right, we dont pass through the higher point.
                 rayLength = hit.distance;
 
+                //also update velocity x
+                if (collisions.climbingSlope) {
+                    velocity.x = velocity.y / Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad) * Mathf.Sign(velocity.x);
+                }
+
                 //if we hit something going up or down, store the info
                 collisions.below = directionY < 0;
                 collisions.above = directionY > 0;
@@ -99,6 +127,22 @@ public class Controller2D : MonoBehaviour {
         }
     }
 
+    //Speed when climbing slope same as normal. Treat velocity.x as the total distance  up the slope we want to move
+    //then that distance and slope angle = velocity x and y
+    void ClimbSlope(ref Vector3 velocity, float slopeAngle) {
+        float moveDistance = Mathf.Abs(velocity.x);
+        float climbVelocityY = Mathf.Sign(slopeAngle * Mathf.Deg2Rad) * moveDistance;
+        //check if we're jumping on the slope
+        if (velocity.y <= climbVelocityY) {
+            velocity.y = climbVelocityY;
+            velocity.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDistance * Mathf.Sign(velocity.x); //but maintain direction right or left
+            //assume we're standing on the ground if climbing slope
+            collisions.below = true;
+            //store the slope info
+            collisions.climbingSlope = true;
+            collisions.slopeAngle = slopeAngle;
+        }
+    }
 
     //Find the corners of our collider
     void UpdateRaycastOrigins() {
@@ -140,9 +184,15 @@ public class Controller2D : MonoBehaviour {
         public bool above, below;
         public bool left, right;
 
+        public bool climbingSlope;
+        public float slopeAngle, slopeAngleOld;
+
         public void Reset() {
             above = below = false;
             left = right = false;
+            climbingSlope = false;
+            slopeAngleOld = slopeAngle;
+            slopeAngle = 0f;
         }
     }
 
