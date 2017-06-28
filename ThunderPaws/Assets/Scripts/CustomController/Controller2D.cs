@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class Controller2D : MonoBehaviour {
 
+    public LayerMask collisionMask;
+
     //used so when the character is resting on the ground its not floating or 100% just touching it. it looks more natural
     const float skinWidth = 0.015f;
 
@@ -20,27 +22,73 @@ public class Controller2D : MonoBehaviour {
 
     private void Start() {
         collider = GetComponent<BoxCollider2D>();
+        CalculateRaySpacing();
     }
 
-    private void Update() {
+    public void Move(Vector3 velocity) {
+        //handle collisions
         UpdateRaycastOrigins();
-        CalculateRaySpacing();
+        if(velocity.x != 0) {
+            HorizontalCollisions(ref velocity);
+        }
+        if (velocity.y != 0) {
+            VerticalCollisions(ref velocity);
+        }
 
-        for(int i = 0; i < verticalRayCount; ++i) {
-            Debug.DrawRay(raycastOrigins.bottomLeft + Vector2.right * verticalRaySpacing * i, Vector2.up * -2, Color.red);
+        //Move the object
+        transform.Translate(velocity);
+    }
+
+
+    //Pass in a reference to the actual parameter variable so any change inside the method changes the passed in variable
+    void HorizontalCollisions(ref Vector3 velocity) {
+        //get direction of velocity
+        float directionX = Mathf.Sign(velocity.x);
+        //positive value of velocity + skinWidth to get out of the collider
+        float rayLength = Mathf.Abs(velocity.x) + skinWidth;
+
+        for (int i = 0; i < horizontalRayCount; ++i) {
+                                                            //moving left                 moving right
+            Vector2 rayOrigin = (directionX == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight;
+            rayOrigin += Vector2.up * (horizontalRaySpacing * i); 
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, collisionMask);
+
+            Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
+
+            if (hit) {
+                //set y velocity to the distance between where we fired, and where the raycast intersected with an obstacle
+                velocity.x = (hit.distance - skinWidth) * directionX;
+                rayLength = hit.distance;
+            }
         }
     }
 
-    //   get the bounds of the collider                                     
-    //                        min.x, max.y | max.x, max.y                                          
-    //                        min.x, min.y | max.x, min.y
-    private Bounds getBounds() {
-        Bounds bounds = collider.bounds;
-        //shrink the bounds by skin width
-        bounds.Expand(skinWidth * -2);
-        return bounds;
-    } 
+    //Pass in a reference to the actual parameter variable so any change inside the method changes the passed in variable
+    void VerticalCollisions(ref Vector3 velocity) {
+        //get direction of velocity
+        float directionY = Mathf.Sign(velocity.y);
+        //positive value of velocity + skinWidth to get out of the collider
+        float rayLength = Mathf.Abs(velocity.y) + skinWidth;
 
+        for (int i = 0; i < verticalRayCount; ++i) {  
+                                                    //moving down                 moving up
+            Vector2 rayOrigin = (directionY == -1) ? raycastOrigins.bottomLeft : raycastOrigins.topLeft;
+            rayOrigin += Vector2.right * (verticalRaySpacing * i + velocity.x); //include .x because we want to do it from where we will be once we've moved
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionMask);
+
+            Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
+
+            if (hit) {
+                //set y velocity to the distance between where we fired, and where the raycast intersected with an obstacle
+                velocity.y = (hit.distance - skinWidth) * directionY;
+                //we change the ray length so that if there is a higher ledge on the left, but not the right, we dont pass through the higher point.
+                rayLength = hit.distance;
+            }
+        }
+    }
+
+
+    //Find the corners of our collider
     void UpdateRaycastOrigins() {
         //get bounds                                  
         Bounds bounds = getBounds();
@@ -51,6 +99,7 @@ public class Controller2D : MonoBehaviour {
         raycastOrigins.topRight = new Vector2(bounds.max.x, bounds.max.y);
     }
 
+    //Calculate spacing between raycasts
     void CalculateRaySpacing() {
         //get bounds                                  
         Bounds bounds = getBounds();
@@ -61,6 +110,17 @@ public class Controller2D : MonoBehaviour {
         horizontalRaySpacing = bounds.size.y / (horizontalRayCount - 1);
         verticalRaySpacing = bounds.size.x / (verticalRayCount - 1);
 
+    }
+
+    /* Helper to get the bounds of the collider                                     
+        min.x, max.y | max.x, max.y                                          
+        min.x, min.y | max.x, min.y
+    */
+    private Bounds getBounds() {
+        Bounds bounds = collider.bounds;
+        //shrink the bounds by skin width
+        bounds.Expand(skinWidth * -2);
+        return bounds;
     }
 
 
