@@ -12,6 +12,7 @@ public class Controller2D : MonoBehaviour {
 
     //max angle we can run up or down without sliding
     float maxClimbAngle = 80f;
+    float maxDescendAngle = 75f;
 
     //how many rays are being fired horizontally and vertically
     public int horizontalRayCount = 4;
@@ -34,6 +35,11 @@ public class Controller2D : MonoBehaviour {
         UpdateRaycastOrigins();
         //Blank slate each time
         collisions.Reset();
+        collisions.velocityOld = velocity;
+
+        if(velocity.y < 0) {
+            DescendSlope(ref velocity);
+        }
         if(velocity.x != 0) {
             HorizontalCollisions(ref velocity);
         }
@@ -64,6 +70,10 @@ public class Controller2D : MonoBehaviour {
                 //get the angle of the surface we hit
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
                 if(i == 0 && slopeAngle <= maxClimbAngle) {//bottom most ray
+                    if (collisions.descendingSlope) {
+                        collisions.descendingSlope = false;
+                        velocity = collisions.velocityOld;
+                    }
                     float distanceToSlopeStart = 0;
                     if(slopeAngle != collisions.slopeAngleOld) {//started climbing a new angle
                         distanceToSlopeStart = hit.distance - skinWidth;
@@ -121,8 +131,24 @@ public class Controller2D : MonoBehaviour {
                 }
 
                 //if we hit something going up or down, store the info
-                collisions.below = directionY < 0;
-                collisions.above = directionY > 0;
+                collisions.below = directionY == -1;
+                collisions.above = directionY == 1;
+            }
+        }
+
+        //handle slope changes within a current slope
+        if (collisions.climbingSlope) {
+            float directionX = Mathf.Sign(velocity.x);
+            rayLength = Mathf.Abs(velocity.x) + skinWidth;
+            Vector2 rayOrigin = ((directionX == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight) + Vector2.up * velocity.y;
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, collisionMask);
+
+            if (hit) {
+                float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+                if (slopeAngle != collisions.slopeAngle) {//this means we'vce collided with a new slope
+                    velocity.x = (hit.distance - skinWidth) * directionX;
+                    collisions.slopeAngle = slopeAngle;
+                }
             }
         }
     }
@@ -141,6 +167,34 @@ public class Controller2D : MonoBehaviour {
             //store the slope info
             collisions.climbingSlope = true;
             collisions.slopeAngle = slopeAngle;
+        }
+    }
+
+    //Same as climbing just inverse
+    void DescendSlope(ref Vector3 velocity) {
+        float directionX = Mathf.Sign(velocity.x);
+        //cast a ray down and if we're moving left, bottom right, otherwise bottom right
+        Vector2 rayOrigin = ((directionX == -1) ? raycastOrigins.bottomRight : raycastOrigins.bottomLeft);
+        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, -Vector2.up, Mathf.Infinity, collisionMask);
+
+        if (hit) {
+            float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+            //if we have a flat surface, dont care
+            if(slopeAngle != 0 && slopeAngle <= maxDescendAngle) {
+                if(Mathf.Sign(hit.normal.x) == directionX) {//check if moving down the slope
+                    //distance to slope is wihtin the distance we need to move to get ot it, so the slope should take effect
+                    if(hit.distance - skinWidth <= Mathf.Tan(slopeAngle * Mathf.Deg2Rad) * Mathf.Abs(velocity.x)) {
+                        float moveDistance = Mathf.Abs(velocity.x);
+                        float descendVelocityY = Mathf.Sign(slopeAngle * Mathf.Deg2Rad) * moveDistance;
+                        velocity.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDistance * Mathf.Sign(velocity.x); //but maintain direction right or left
+                        velocity.y -= descendVelocityY;
+
+                        collisions.slopeAngle = slopeAngle;
+                        collisions.descendingSlope = true;
+                        collisions.below = true;
+                    }
+                }
+            }
         }
     }
 
@@ -185,12 +239,15 @@ public class Controller2D : MonoBehaviour {
         public bool left, right;
 
         public bool climbingSlope;
+        public bool descendingSlope;
         public float slopeAngle, slopeAngleOld;
+        public Vector3 velocityOld;
 
         public void Reset() {
             above = below = false;
             left = right = false;
             climbingSlope = false;
+            descendingSlope = false;
             slopeAngleOld = slopeAngle;
             slopeAngle = 0f;
         }
