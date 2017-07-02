@@ -3,34 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
-public class Controller2D : MonoBehaviour {
-
-    public LayerMask collisionMask;
-
-    //used so when the character is resting on the ground its not floating or 100% just touching it. it looks more natural
-    const float skinWidth = 0.015f;
+public class Controller2D : RaycastController {
+    public CollisionInfo collisions;
 
     //max angle we can run up or down without sliding
     float maxClimbAngle = 80f;
     float maxDescendAngle = 75f;
 
-    //how many rays are being fired horizontally and vertically
-    public int horizontalRayCount = 4;
-    public int verticalRayCount = 4;
-    //calculate the spacing between rays based on how many we fire and size of bounds
-    float horizontalRaySpacing = 4;
-    float verticalRaySpacing = 4;
-
-    BoxCollider2D collider;
-    RaycastOrigins raycastOrigins;
-    public CollisionInfo collisions;
-
-    private void Start() {
-        collider = GetComponent<BoxCollider2D>();
-        CalculateRaySpacing();
+    public override void Start() {
+        //parent start
+        base.Start();
     }
 
-    public void Move(Vector3 velocity) {
+    public void Move(Vector3 velocity, bool standingOnPlatform = false) {
         //handle collisions
         UpdateRaycastOrigins();
         //Blank slate each time
@@ -48,6 +33,10 @@ public class Controller2D : MonoBehaviour {
         }
         //Move the object
         transform.Translate(velocity);
+
+        if (standingOnPlatform) {
+            collisions.below = true;
+        }
     }
 
 
@@ -67,6 +56,10 @@ public class Controller2D : MonoBehaviour {
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
 
             if (hit) {
+                //check for moving platforms that we're not inside the collision. I.E. the plaform is behind us
+                if(hit.distance == 0) {
+                    continue;
+                }
                 //get the angle of the surface we hit
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
                 if(i == 0 && slopeAngle <= maxClimbAngle) {//bottom most ray
@@ -198,42 +191,6 @@ public class Controller2D : MonoBehaviour {
         }
     }
 
-    //Find the corners of our collider
-    void UpdateRaycastOrigins() {
-        //get bounds                                  
-        Bounds bounds = getBounds();
-
-        raycastOrigins.bottomLeft = new Vector2(bounds.min.x, bounds.min.y);
-        raycastOrigins.bottomRight = new Vector2(bounds.max.x, bounds.min.y);
-        raycastOrigins.topLeft = new Vector2(bounds.min.x, bounds.max.y);
-        raycastOrigins.topRight = new Vector2(bounds.max.x, bounds.max.y);
-    }
-
-    //Calculate spacing between raycasts
-    void CalculateRaySpacing() {
-        //get bounds                                  
-        Bounds bounds = getBounds();
-        //at least 2 in the horizontal and vertical directions
-        horizontalRayCount = Mathf.Clamp(horizontalRayCount, 2, int.MaxValue);
-        verticalRayCount = Mathf.Clamp(verticalRayCount, 2, int.MaxValue);
-        //if vertical count is 2, then space between them is size of bounds / 1 = entire space. if count is 3 then bounds / 2 = half space in between...etc
-        horizontalRaySpacing = bounds.size.y / (horizontalRayCount - 1);
-        verticalRaySpacing = bounds.size.x / (verticalRayCount - 1);
-
-    }
-
-    /* Helper to get the bounds of the collider                                     
-        min.x, max.y | max.x, max.y                                          
-        min.x, min.y | max.x, min.y
-    */
-    private Bounds getBounds() {
-        Bounds bounds = collider.bounds;
-        //shrink the bounds by skin width
-        bounds.Expand(skinWidth * -2);
-        return bounds;
-    }
-
-
     public struct CollisionInfo {
         public bool above, below;
         public bool left, right;
@@ -253,9 +210,4 @@ public class Controller2D : MonoBehaviour {
         }
     }
 
-    //Stores all the corners of our box collider
-    struct RaycastOrigins {
-        public Vector2 topLeft, topRight;
-        public Vector2 bottomLeft, bottomRight;
-    }
 }
