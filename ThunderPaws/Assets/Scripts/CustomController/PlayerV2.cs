@@ -6,7 +6,8 @@ using UnityEngine;
 public class PlayerV2 : MonoBehaviour {
 
     //Determines what gravity and jumpVelocity are set to
-    public float jumpHeight = 4f;//how high
+    public float maxJumpHeight = 4f;//how high
+    public float minJumpHeight = 1f;
     public float timeToJumpApex = 0.4f;//how long till they reach highest point
     float accelerationTimeAirborn = 0.2f;//change direction a little slower when in the air
     float accelerationTimeGrounded = 0.1f;
@@ -21,7 +22,8 @@ public class PlayerV2 : MonoBehaviour {
     float timeToWallUnstick;
 
     float gravity;
-    float jumpVelocity;
+    float maxJumpVelocity;
+    float minJumpVelocity;
     Vector3 velocity;
     float velocityXSmoothing;
 
@@ -30,9 +32,10 @@ public class PlayerV2 : MonoBehaviour {
 	void Start () {
         controller = GetComponent<Controller2D>();
 
-        gravity = -(2 * jumpHeight) / Mathf.Pow(timeToJumpApex, 2);
-        jumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
-        print("Gravity: " + gravity + " and JumpVelocity: " + jumpVelocity);
+        gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
+        maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
+        minJumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(gravity) * minJumpHeight);
+        print("Gravity: " + gravity + " and JumpVelocity: " + maxJumpVelocity);
 	}
 
     private void Update() {
@@ -68,11 +71,6 @@ public class PlayerV2 : MonoBehaviour {
             }
         }
 
-        //Stop the accumulation of gravity if we're move moving up or down
-        if (controller.collisions.above || controller.collisions.below) {
-            velocity.y = 0;
-        }
-
         if (Input.GetKeyDown(KeyCode.Space)) {//jump is pressed and the player is standing on something TODO: double jump
             if (wallSliding) {
                 if(wallDirX == input.x) {//tryiung to move in the same direction we're facing
@@ -88,12 +86,23 @@ public class PlayerV2 : MonoBehaviour {
             }
             //normal jump
             if (controller.collisions.below) {
-                velocity.y = jumpVelocity;
+                velocity.y = maxJumpVelocity;
+            }
+        }
+
+        if (Input.GetKeyUp(KeyCode.Space)) {
+            if(velocity.y > minJumpVelocity) {
+                velocity.y = minJumpVelocity;
             }
         }
 
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+        controller.Move(velocity * Time.deltaTime, input);
+
+        //Stop the accumulation of gravity if we're move moving up or down
+        if (controller.collisions.above || controller.collisions.below) {
+            velocity.y = 0;
+        }
     }
 
 }

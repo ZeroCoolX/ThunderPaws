@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class Controller2D : RaycastController {
     public CollisionInfo collisions;
+    Vector2 playerInput;
 
     //max angle we can run up or down without sliding
     float maxClimbAngle = 80f;
@@ -16,12 +17,17 @@ public class Controller2D : RaycastController {
         collisions.faceDir = 1;
     }
 
-    public void Move(Vector3 velocity, bool standingOnPlatform = false) {
+    public void Move(Vector3 velocity, bool standingOnPlatform) {
+        Move(velocity, Vector2.zero, standingOnPlatform);
+    }
+
+    public void Move(Vector3 velocity, Vector2 input, bool standingOnPlatform = false) {
         //handle collisions
         UpdateRaycastOrigins();
         //Blank slate each time
         collisions.Reset();
         collisions.velocityOld = velocity;
+        playerInput = input;
 
         if(velocity.x != 0) {
             collisions.faceDir = (int)Mathf.Sign(velocity.x);
@@ -120,6 +126,20 @@ public class Controller2D : RaycastController {
             Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
 
             if (hit) {
+                //Check for one way platforms - or completely through ones
+                if(hit.collider.tag == "OBSTACLE-THROUGH") {
+                    if(directionY == 1 || hit.distance == 0) {
+                        continue;
+                    }
+                }
+                if (collisions.fallingThroughPlatform) {
+                    continue;
+                }
+                if (playerInput.y == -1) {
+                    collisions.fallingThroughPlatform = true;
+                    Invoke("ResetFallingThroughPlatform", 0.25f);//give the player half a second chance to fall through the platform
+                    continue;
+                }
                 //set y velocity to the distance between where we fired, and where the raycast intersected with an obstacle
                 velocity.y = (hit.distance - skinWidth) * directionY;
                 //we change the ray length so that if there is a higher ledge on the left, but not the right, we dont pass through the higher point.
@@ -198,6 +218,10 @@ public class Controller2D : RaycastController {
         }
     }
 
+    void ResetFallingThroughPlatform() {
+        collisions.fallingThroughPlatform = false;
+    }
+
     public struct CollisionInfo {
         public bool above, below;
         public bool left, right;
@@ -207,6 +231,7 @@ public class Controller2D : RaycastController {
         public float slopeAngle, slopeAngleOld;
         public Vector3 velocityOld;
         public int faceDir;//1 right   -1 left
+        public bool fallingThroughPlatform;
 
         public void Reset() {
             above = below = false;

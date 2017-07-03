@@ -120,7 +120,7 @@ public class PlatformerController : RaycastController {
                 RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, passengerMask);
 
                 //found a passenger
-                if (hit) {
+                if (hit && hit.distance != 0) {
                     if (!movedPassengers.Contains(hit.transform)) {
                         movedPassengers.Add(hit.transform);//ensures each passenger is only moved 1 time per frame
                         //let the gap between the passenger and platform close - then move the rest of the velocity
@@ -145,7 +145,7 @@ public class PlatformerController : RaycastController {
                 RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, passengerMask);
 
                 //found a passenger
-                if (hit) {
+                if (hit && hit.distance != 0) {
                     if (!movedPassengers.Contains(hit.transform)) {
                         movedPassengers.Add(hit.transform);//ensures each passenger is only moved 1 time per frame
                         //let the gap between the passenger and platform close - then move the rest of the velocity
@@ -168,7 +168,7 @@ public class PlatformerController : RaycastController {
                 RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up, rayLength, passengerMask);
 
                 //found a passenger
-                if (hit) {
+                if (hit && hit.distance != 0) {
                     if (!movedPassengers.Contains(hit.transform)) {
                         movedPassengers.Add(hit.transform);//ensures each passenger is only moved 1 time per frame
                         //let the gap between the passenger and platform close - then move the rest of the velocity
