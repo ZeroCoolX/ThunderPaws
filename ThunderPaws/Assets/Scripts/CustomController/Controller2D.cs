@@ -13,6 +13,7 @@ public class Controller2D : RaycastController {
     public override void Start() {
         //parent start
         base.Start();
+        collisions.faceDir = 1;
     }
 
     public void Move(Vector3 velocity, bool standingOnPlatform = false) {
@@ -22,12 +23,14 @@ public class Controller2D : RaycastController {
         collisions.Reset();
         collisions.velocityOld = velocity;
 
+        if(velocity.x != 0) {
+            collisions.faceDir = (int)Mathf.Sign(velocity.x);
+        }
         if(velocity.y < 0) {
             DescendSlope(ref velocity);
         }
-        if(velocity.x != 0) {
-            HorizontalCollisions(ref velocity);
-        }
+        //due to wallsliding always check horizontal collisions
+        HorizontalCollisions(ref velocity);
         if (velocity.y != 0) {
             VerticalCollisions(ref velocity);
         }
@@ -43,9 +46,13 @@ public class Controller2D : RaycastController {
     //Pass in a reference to the actual parameter variable so any change inside the method changes the passed in variable
     void HorizontalCollisions(ref Vector3 velocity) {
         //get direction of velocity
-        float directionX = Mathf.Sign(velocity.x);
+        float directionX = collisions.faceDir;
         //positive value of velocity + skinWidth to get out of the collider
         float rayLength = Mathf.Abs(velocity.x) + skinWidth;
+
+        if(Mathf.Abs(velocity.x) < skinWidth) {
+            rayLength = 2 * skinWidth;
+        }
 
         for (int i = 0; i < horizontalRayCount; ++i) {//no way this matters
                                                             //moving left                 moving right
@@ -199,6 +206,7 @@ public class Controller2D : RaycastController {
         public bool descendingSlope;
         public float slopeAngle, slopeAngleOld;
         public Vector3 velocityOld;
+        public int faceDir;//1 right   -1 left
 
         public void Reset() {
             above = below = false;
