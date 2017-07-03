@@ -29,6 +29,10 @@ public class PlayerV2 : MonoBehaviour {
 
     Controller2D controller;
 
+    Vector2 directionalInput;
+    bool wallSliding;
+    int wallDirX;
+
 	void Start () {
         controller = GetComponent<Controller2D>();
 
@@ -39,70 +43,79 @@ public class PlayerV2 : MonoBehaviour {
 	}
 
     private void Update() {
-        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        int wallDirX = (controller.collisions.left) ? -1 : 1;
+        CalculateVelocity();
+        HandleWallSliding();
 
-        //must calculate x first before dealing with wall sliding
-        float targetVelocityX = input.x * moveSpeed;
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisions.below) ? accelerationTimeGrounded : accelerationTimeAirborn);
-
-        bool wallSliding = false;
-        //check if we're sliding down the wall
-        if ((controller.collisions.left || controller.collisions.right) && !controller.collisions.below && velocity.y < 0) {
-            wallSliding = true;
-
-            if(velocity.y < -wallSlideSpeedMax) {
-                velocity.y = -wallSlideSpeedMax;
-            }
-
-            if(timeToWallUnstick > 0) {
-                //reset velocity so the player can stick to the wall
-                velocityXSmoothing = 0;
-                velocity.x = 0;
-
-                //enables the user to be pressing the direction key they want to go before jumping - makes wall jumping way easier
-                if (input.x != wallDirX && input.x != 0) {
-                    timeToWallUnstick -= Time.deltaTime;
-                } else {
-                    timeToWallUnstick = wallStickTime;
-                }
-            }else {
-                timeToWallUnstick = wallStickTime;
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space)) {//jump is pressed and the player is standing on something TODO: double jump
-            if (wallSliding) {
-                if(wallDirX == input.x) {//tryiung to move in the same direction we're facing
-                    velocity.x = -wallDirX * wallJumpClimb.x;
-                    velocity.y = wallJumpClimb.y;
-                }else if(input.x == 0) {//just hopping off the wall
-                    velocity.x = -wallDirX * wallJumpOff.x;
-                    velocity.y = wallJumpClimb.y;
-                }else {//leap off in the opposite direction
-                    velocity.x = -wallDirX * wallLeap.x;
-                    velocity.y = wallLeap.y;
-                }
-            }
-            //normal jump
-            if (controller.collisions.below) {
-                velocity.y = maxJumpVelocity;
-            }
-        }
-
-        if (Input.GetKeyUp(KeyCode.Space)) {
-            if(velocity.y > minJumpVelocity) {
-                velocity.y = minJumpVelocity;
-            }
-        }
-
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime, input);
+        controller.Move(velocity * Time.deltaTime, directionalInput);
 
         //Stop the accumulation of gravity if we're move moving up or down
         if (controller.collisions.above || controller.collisions.below) {
             velocity.y = 0;
         }
+    }
+
+    public void SetDirectionalInput(Vector2 input) {
+        directionalInput = input;
+    }
+
+    public void OnJumpInputDown() {
+        if (wallSliding) {
+            if (wallDirX == directionalInput.x) {//tryiung to move in the same direction we're facing
+                velocity.x = -wallDirX * wallJumpClimb.x;
+                velocity.y = wallJumpClimb.y;
+            } else if (directionalInput.x == 0) {//just hopping off the wall
+                velocity.x = -wallDirX * wallJumpOff.x;
+                velocity.y = wallJumpClimb.y;
+            } else {//leap off in the opposite direction
+                velocity.x = -wallDirX * wallLeap.x;
+                velocity.y = wallLeap.y;
+            }
+        }
+        //normal jump
+        if (controller.collisions.below) {
+            velocity.y = maxJumpVelocity;
+        }
+    }
+
+    public void OnJumpInputUp() {
+        if (velocity.y > minJumpVelocity) {
+            velocity.y = minJumpVelocity;
+        }
+    }
+
+    private void HandleWallSliding() {
+        wallDirX = (controller.collisions.left) ? -1 : 1;
+        wallSliding = false;
+        //check if we're sliding down the wall
+        if ((controller.collisions.left || controller.collisions.right) && !controller.collisions.below && velocity.y < 0) {
+            wallSliding = true;
+
+            if (velocity.y < -wallSlideSpeedMax) {
+                velocity.y = -wallSlideSpeedMax;
+            }
+
+            if (timeToWallUnstick > 0) {
+                //reset velocity so the player can stick to the wall
+                velocityXSmoothing = 0;
+                velocity.x = 0;
+
+                //enables the user to be pressing the direction key they want to go before jumping - makes wall jumping way easier
+                if (directionalInput.x != wallDirX && directionalInput.x != 0) {
+                    timeToWallUnstick -= Time.deltaTime;
+                } else {
+                    timeToWallUnstick = wallStickTime;
+                }
+            } else {
+                timeToWallUnstick = wallStickTime;
+            }
+        }
+    }
+
+    private void CalculateVelocity() {
+        //must calculate x first before dealing with wall sliding
+        float targetVelocityX = directionalInput.x * moveSpeed;
+        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisions.below) ? accelerationTimeGrounded : accelerationTimeAirborn);
+        velocity.y += gravity * Time.deltaTime;
     }
 
 }

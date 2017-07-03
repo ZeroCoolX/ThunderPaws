@@ -10,11 +10,14 @@ public class RaycastController : MonoBehaviour {
 
     //used so when the character is resting on the ground its not floating or 100% just touching it. it looks more natural
     public const float skinWidth = 0.015f;
-
+    public const float dstBetweenHorizontalRays = 0.1f;
+    public const float dstBetweenVerticalRays = 0.05f;
 
     //how many rays are being fired horizontally and vertically
-    public int horizontalRayCount = 4;
-    public int verticalRayCount = 4;
+    [HideInInspector]
+    public int horizontalRayCount;
+    [HideInInspector]
+    public int verticalRayCount;
 
     //calculate the spacing between rays based on how many we fire and size of bounds
     [HideInInspector]
@@ -46,9 +49,14 @@ public class RaycastController : MonoBehaviour {
     public void CalculateRaySpacing() {
         //get bounds                                  
         Bounds bounds = getBounds();
-        //at least 2 in the horizontal and vertical directions
-        horizontalRayCount = Mathf.Clamp(horizontalRayCount, 2, int.MaxValue);
-        verticalRayCount = Mathf.Clamp(verticalRayCount, 2, int.MaxValue);
+
+        float boundsWidth = bounds.size.x;
+        float boundsHeight = bounds.size.y;
+
+        //calculate how many we need based off spacing
+        horizontalRayCount = Mathf.RoundToInt(boundsHeight / dstBetweenHorizontalRays);
+        verticalRayCount = Mathf.RoundToInt(boundsWidth / dstBetweenVerticalRays);
+
         //if vertical count is 2, then space between them is size of bounds / 1 = entire space. if count is 3 then bounds / 2 = half space in between...etc
         horizontalRaySpacing = bounds.size.y / (horizontalRayCount - 1);
         verticalRaySpacing = bounds.size.x / (verticalRayCount - 1);
