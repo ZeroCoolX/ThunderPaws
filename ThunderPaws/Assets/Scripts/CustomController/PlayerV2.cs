@@ -50,7 +50,11 @@ public class PlayerV2 : MonoBehaviour {
 
         //Stop the accumulation of gravity if we're move moving up or down
         if (controller.collisions.above || controller.collisions.below) {
-            velocity.y = 0;
+            if (controller.collisions.slidingDownMaxSlope) {
+                velocity.y += controller.collisions.slopeNormal.y * -gravity * Time.deltaTime;
+            }else {
+                velocity.y = 0;
+            }
         }
     }
 
@@ -73,7 +77,15 @@ public class PlayerV2 : MonoBehaviour {
         }
         //normal jump
         if (controller.collisions.below) {
-            velocity.y = maxJumpVelocity;
+            if (controller.collisions.slidingDownMaxSlope) {
+                //not jumping against the max slope
+                if (directionalInput.x != -Mathf.Sign(controller.collisions.slopeNormal.x)) {
+                    velocity.y = maxJumpVelocity * controller.collisions.slopeNormal.y;
+                    velocity.x = maxJumpVelocity * controller.collisions.slopeNormal.x;
+                }
+            } else {
+                velocity.y = maxJumpVelocity;
+            }
         }
     }
 
