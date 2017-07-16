@@ -28,8 +28,11 @@ public class GameMaster : MonoBehaviour {
     public WeaponSwitchCallback onWeaponSwitch;
 
     //TODO: currency
-    //TODO: spawning
     //TODO: audio
+    public Transform player;
+    public Transform spawnPoint;
+    public int spawnDelay = 2;
+    public GameObject spawnPrefab;
 
     private void Awake() {
         if(instance == null) {
@@ -74,7 +77,14 @@ public class GameMaster : MonoBehaviour {
     //Actual destruction of optional respawn
     private void KillDashNine(GameObject obj) {
         Destroy(obj);
-        //TODO: respawn
+        instance.StartCoroutine(instance.RespawnPlayer());
+    }
+
+    private IEnumerator RespawnPlayer() {//TODO: spawn sound
+        yield return new WaitForSeconds(spawnDelay);
+        Instantiate(player, spawnPoint.position, spawnPoint.rotation);
+        GameObject clone = Instantiate(spawnPrefab, spawnPoint.position, spawnPoint.rotation) as GameObject;
+        Destroy(clone, 3f);
     }
 
 }

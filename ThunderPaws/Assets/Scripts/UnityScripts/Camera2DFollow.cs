@@ -31,7 +31,7 @@ namespace UnityStandardAssets._2D {
         private void Update() {
             //Dead player check
             if (target == null) {
-                findPlayer();
+                FindPlayer();
                 return;
             }
 
@@ -57,7 +57,7 @@ namespace UnityStandardAssets._2D {
             m_LastTargetPosition = target.position;
         }
 
-        private void findPlayer() {
+        private void FindPlayer() {
             if (nextTimeToSearch <= Time.time) {
                 GameObject searchResult = GameObject.FindGameObjectWithTag("Player");
                 if (searchResult != null) {
