@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Controller2D))]
-public class PlayerV2 : MonoBehaviour {
+public class PlayerController2D : MonoBehaviour {
 
     //Determines what gravity and jumpVelocity are set to
     public float maxJumpHeight = 4f;//how high

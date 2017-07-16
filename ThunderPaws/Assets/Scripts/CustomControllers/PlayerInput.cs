@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerV2))]
+[RequireComponent(typeof(PlayerController2D))]
 public class PlayerInput : MonoBehaviour {
-    PlayerV2 player;
+    PlayerController2D player;
 
 	
 	void Start () {
-        player = GetComponent<PlayerV2>();
+        player = GetComponent<PlayerController2D>();
 	}
 	
 	

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets._2D;
 
-[RequireComponent(typeof(Platformer2DUserControl))]
+[RequireComponent(typeof(Controller2D))]
 public class Player : MonoBehaviour {
     private PlayerStats _stats;
 

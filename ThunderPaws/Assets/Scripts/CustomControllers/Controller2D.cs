@@ -72,7 +72,6 @@ public class Controller2D : RaycastController {
                 invertArm();
             }
         }
-        print("speedAmout = " + moveAmount.x);
         // The Speed animator parameter is set to the absolute value of the horizontal input.
         animator.SetFloat("Speed", Mathf.Abs(moveAmount.x));
 

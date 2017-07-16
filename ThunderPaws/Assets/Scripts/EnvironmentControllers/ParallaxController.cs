@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Controls  the backgorund scrolling
-public class Parallaxing : MonoBehaviour {
+public class ParallaxController : MonoBehaviour {
 
     //Collection of backgrounds to be parallaxed
     public List<Transform> backgrounds;

@@ -48,7 +48,7 @@ public class Tiling : MonoBehaviour {
                 leftBuddy.GetComponent<Tiling>().hasRightBuddy = false;
             }
 
-            GameMaster.instance.GetComponent<Parallaxing>().RemoveParallax(transform);
+            GameMaster.instance.GetComponent<ParallaxController>().RemoveParallax(transform);
 
             Destroy(gameObject);
         }
@@ -95,7 +95,7 @@ public class Tiling : MonoBehaviour {
             newBuddy.GetComponent<Tiling>().hasRightBuddy = true;//same as above
         }
         if (shouldParallax) {//only some backgorund elements should parallax, the back sky should not
-            GameMaster.instance.GetComponent<Parallaxing>().AddParallax(newBuddy);
+            GameMaster.instance.GetComponent<ParallaxController>().AddParallax(newBuddy);
         }
     }
 }
