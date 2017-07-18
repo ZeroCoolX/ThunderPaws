@@ -12,6 +12,7 @@ public class BaddieAI : MonoBehaviour {
     public float turnSpeed = 10f;
     public Transform armRotationAxis;
     private bool _armIsLeft = false;
+    public Transform baddieGraphics;
 
     private bool _searchingForPlayer = false;
 
@@ -30,6 +31,12 @@ public class BaddieAI : MonoBehaviour {
     }
 
     private void Start() {
+        baddieGraphics = transform.FindChild("Graphics");
+        if (baddieGraphics == null) {
+            //couldn't find player graphics 
+            Debug.LogError("Cannot find Graphics on baddie");
+        }
+
         //Search for the target in game if there isn't one set - meaning he died and is respawning
         if (target == null) {
             //Player might be dead so search
@@ -110,7 +117,7 @@ public class BaddieAI : MonoBehaviour {
     private void LockOnTarget() {
         //rotate left or right to face target
         float faceDir = target.position.x - transform.position.x;
-        transform.rotation = Quaternion.Euler(0f, faceDir <= 0 ? -180f : 360f, 0f);
+        baddieGraphics.rotation = Quaternion.Euler(0f, faceDir <= 0 ? -180f : 360f, 0f);
 
         Vector3 diff = target.position - armRotationAxis.position;
         //Normalize the vector x + y + z = 1
@@ -127,7 +134,6 @@ public class BaddieAI : MonoBehaviour {
             InvertArm();
         }
     }
-
     private void InvertArm() {
         //switch the way the arm is labeled as facing
         _armIsLeft = !_armIsLeft;

@@ -25,9 +25,30 @@ public class Baddie : MonoBehaviour {//TODO: baddieStats and PlayerStats are lik
     //Reference to inner class
     BaddieStats stats = new BaddieStats();
 
+    public Transform deathParticles;
+    public Transform healthDrop;
+    public int healthDropAmount = 10;
+
+    [Header("Optional: ")]
+    [SerializeField]
+    private StatusIndicator statusIndicator;
+
+    //for death camera shake
+    public float shakeAmount = 0.05f;
+    public float shakeLength = 0.1f;
+
     private void Start() {
         //initialize stats
         stats.Init();
+        //set baddie health
+        if(statusIndicator != null) {
+            statusIndicator.SetHealth(stats.curHealth, stats.maxHealth);
+        }
+
+        if(deathParticles == null) {
+            Debug.LogError("No death particles found");
+        }
+        //TODO: add user interface
     }
 
     private void LifeCheck() {
@@ -36,13 +57,16 @@ public class Baddie : MonoBehaviour {//TODO: baddieStats and PlayerStats are lik
             GameMaster.KillBaddie(this);
         } else {
             //Not dead just hurt
-            //TODO: audio
+            //TODO: audio and maybe color flash or something to visually indicate
         }
     }
     
     public void DamageHealth(int dmg) {
         //Damage baddie and check vitals
         stats.curHealth -= dmg;
+        if(statusIndicator != null) {
+            statusIndicator.SetHealth(stats.curHealth, stats.maxHealth);
+        }
         LifeCheck();
     }
 }

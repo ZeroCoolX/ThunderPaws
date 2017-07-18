@@ -62,8 +62,18 @@ public class GameMaster : MonoBehaviour {
     }
 
     public static void KillBaddie(Baddie baddie) {
-        //TODO: sound, currency drop, generate particles, maybe ecamshake
-        //kill the baddie
+        //TODO: sound
+        //Generate death particles
+        Transform clone = Instantiate(baddie.deathParticles, baddie.transform.position, Quaternion.identity) as Transform;
+        Destroy(clone.gameObject, 3f);
+
+        //Generate camera shake
+        instance.camShake.Shake(baddie.shakeAmount, baddie.shakeLength);
+
+        //Generate health drop
+       // Instantiate(baddie.healthDrop, baddie.transform.position, Quaternion.identity);
+
+        //Actually kill it finally
         instance.KillDashNine(baddie.gameObject);
     }
 
