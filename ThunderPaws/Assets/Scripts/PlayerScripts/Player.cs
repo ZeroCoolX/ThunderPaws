@@ -7,6 +7,14 @@ using UnityStandardAssets._2D;
 public class Player : MonoBehaviour {
     private PlayerStats _stats;
 
+    public Transform deathParticles;
+    //for death camera shake
+    public float shakeAmount = 0.05f;
+    public float shakeLength = 0.1f;
+
+    [SerializeField]
+    private StatusIndicator statusIndicator;
+
     [Header("Weapons")]
     //weapon refeerences to enable/disable based on user input
     [SerializeField]
@@ -19,10 +27,22 @@ public class Player : MonoBehaviour {
         _stats = PlayerStats.instance;
         _stats.curHealth = _stats.maxHealth;
 
+        if(statusIndicator == null) {
+            Debug.LogError("No status indicator found");
+        }
+        statusIndicator.SetHealth(_stats.curHealth, _stats.maxHealth);
+
+        if(deathParticles == null) {
+            Debug.LogError("No player death particles found");
+        }
+
         //select the default weapon
         SelectWeapon(GameMaster.instance.weaponChoice);
         //Add the weapon switch method onto the weaponSwitch delegate
         GameMaster.instance.onWeaponSwitch += SelectWeapon;
+
+        //Regenerate health over time
+        InvokeRepeating("RegenHealth", 1f / _stats.healthRegenRate, 1f / _stats.healthRegenRate);
     }
 
     private void SelectWeapon(int choice) {
@@ -57,7 +77,16 @@ public class Player : MonoBehaviour {
     public void DamageHealth(int dmg) {
         //damage health and check for signs of life
         _stats.curHealth -= dmg;
+        if(statusIndicator != null) {
+            statusIndicator.SetHealth(_stats.curHealth, _stats.maxHealth);
+        }
         LifeCheck();
     } 
+
+    private void RegenHealth() {
+        _stats.curHealth += _stats.healthRegenValue;
+        //update visual health bad
+        statusIndicator.SetHealth(_stats.curHealth, _stats.maxHealth);
+    }
 
 }

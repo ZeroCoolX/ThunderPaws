@@ -22,7 +22,6 @@ public class StatusIndicator : MonoBehaviour {
     public void SetHealth(int _cur, int _max) {
         //calculate percentage of max health
         float value = (float)_cur / _max;
-
         //TODO: change color of bar over time
         healthBarRect.localScale = new Vector3(value, healthBarRect.localScale.y, healthBarRect.localScale.z);
         healthText.text = (_cur + "/" + _max + " HP");

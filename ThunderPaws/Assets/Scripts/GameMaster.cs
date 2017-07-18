@@ -74,20 +74,30 @@ public class GameMaster : MonoBehaviour {
        // Instantiate(baddie.healthDrop, baddie.transform.position, Quaternion.identity);
 
         //Actually kill it finally
-        instance.KillDashNine(baddie.gameObject);
+        instance.KillDashNine(baddie.gameObject, false);
     }
 
     public static void KillPlayer(Player player) {
         //decrement lives
         --remainingLives;
+
+        //Generate death particles
+        Transform clone = Instantiate(player.deathParticles, player.transform.position, Quaternion.identity) as Transform;
+        Destroy(clone.gameObject, 3f);
+
+        //Generate camera shake
+        instance.camShake.Shake(player.shakeAmount, player.shakeLength);
+
         //kill the player
-        instance.KillDashNine(player.gameObject);
+        instance.KillDashNine(player.gameObject, true);
     }
 
     //Actual destruction of optional respawn
-    private void KillDashNine(GameObject obj) {
+    private void KillDashNine(GameObject obj, bool respawn) {
         Destroy(obj);
-        instance.StartCoroutine(instance.RespawnPlayer());
+        if (respawn) { 
+            instance.StartCoroutine(instance.RespawnPlayer());
+        }
     }
 
     private IEnumerator RespawnPlayer() {//TODO: spawn sound
