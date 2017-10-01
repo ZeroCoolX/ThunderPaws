@@ -29,7 +29,7 @@ public class Controller2D : RaycastController {
         }
     }
 
-    public void Move(Vector2 moveAmount, bool standingOnPlatform) {
+    public void Move(Vector2 moveAmount, bool standingOnPlatform) {//this method is now useless - I think
         Move(moveAmount, Vector2.zero, standingOnPlatform);
     }
 
@@ -72,8 +72,8 @@ public class Controller2D : RaycastController {
                 invertArm();
             }
         }
-        // The Speed animator parameter is set to the absolute value of the horizontal input.
-        animator.SetFloat("Speed", Mathf.Abs(moveAmount.x));
+        //multiply by input so animation plays only when input is supplied instead of all the time because its a moving platform
+        animator.SetFloat("Speed", Mathf.Max(Mathf.Abs(moveAmount.x), Mathf.Abs(moveAmount.y)) * (input.Equals(Vector2.zero) ? 0 : 1));
 
         //Move the object
         transform.Translate(moveAmount);

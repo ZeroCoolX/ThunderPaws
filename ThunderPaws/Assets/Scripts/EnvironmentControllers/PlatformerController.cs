@@ -95,7 +95,7 @@ public class PlatformerController : RaycastController {
                 passengerDictionary.Add(passenger.transform, passenger.transform.GetComponent<Controller2D>());
             }
             if (passenger.moveBeforePlatform == beforeMovePlatform) {
-                passengerDictionary[passenger.transform].Move(passenger.velocity, passenger.standingOnPlatform);
+                passengerDictionary[passenger.transform].Move(passenger.velocity, passenger.input, passenger.standingOnPlatform);
             }
         }
     }
@@ -127,7 +127,7 @@ public class PlatformerController : RaycastController {
                         float pushX = (directionY == 1) ? velocity.x : 0;//in the horizontal direction only move the passenger if they're standing on it
                         float pushY = velocity.y - (hit.distance - skinWidth) * directionY;//distance between plat and passenger
                         //add a new passengermovement
-                        passengerMovement.Add(new PassengerMovement(hit.transform, new Vector3(pushX, pushY), directionY == 1, true));
+                        passengerMovement.Add(new PassengerMovement(hit.transform, new Vector3(pushX, pushY), directionY == 1, true, hit.transform.GetComponent<PlayerController2D>().directionalInput));
                     }
                 }
             }
@@ -152,7 +152,7 @@ public class PlatformerController : RaycastController {
                         float pushX = velocity.x - (hit.distance - skinWidth) * directionX;//in the horizontal direction only move the passenger if they're standing on it
                         float pushY = -skinWidth;
                         //add a new passengermovement
-                        passengerMovement.Add(new PassengerMovement(hit.transform, new Vector3(pushX, pushY), false, true));
+                        passengerMovement.Add(new PassengerMovement(hit.transform, new Vector3(pushX, pushY), false, true, hit.transform.GetComponent<PlayerController2D>().directionalInput));
                     }
                 }
             }
@@ -175,7 +175,7 @@ public class PlatformerController : RaycastController {
                         float pushX = velocity.x;
                         float pushY = velocity.y;
                         //add a new passengermovement
-                        passengerMovement.Add(new PassengerMovement(hit.transform, new Vector3(pushX, pushY), true, false));
+                        passengerMovement.Add(new PassengerMovement(hit.transform, new Vector3(pushX, pushY), true, false, hit.transform.GetComponent<PlayerController2D>().directionalInput));
                     }
                 }
             }
@@ -187,12 +187,14 @@ public class PlatformerController : RaycastController {
         public Vector3 velocity;
         public bool standingOnPlatform;
         public bool moveBeforePlatform;
+        public Vector2 input;
 
-        public PassengerMovement(Transform _transform, Vector3 _velocity, bool _standingOnPlatform, bool _moveBeforePlatform) {
+        public PassengerMovement(Transform _transform, Vector3 _velocity, bool _standingOnPlatform, bool _moveBeforePlatform, Vector2 _input) {
             transform = _transform;
             velocity = _velocity;
             standingOnPlatform = _standingOnPlatform;
             moveBeforePlatform = _moveBeforePlatform;
+            input = _input;
         }
     }
 

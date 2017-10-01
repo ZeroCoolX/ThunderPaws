@@ -11,7 +11,7 @@ public class PlayerController2D : MonoBehaviour {
     public float timeToJumpApex = 0.4f;//how long till they reach highest point
     float accelerationTimeAirborn = 0.2f;//change direction a little slower when in the air
     float accelerationTimeGrounded = 0.1f;
-    float moveSpeed = 6f;
+    float moveSpeed = 10f;
 
     public Vector2 wallJumpClimb;
     public Vector2 wallJumpOff;
@@ -29,7 +29,7 @@ public class PlayerController2D : MonoBehaviour {
 
     Controller2D controller;
 
-    Vector2 directionalInput;
+    public Vector2 directionalInput;
     bool wallSliding;
     int wallDirX;
 
@@ -45,7 +45,6 @@ public class PlayerController2D : MonoBehaviour {
     private void Update() {
         CalculateVelocity();
         HandleWallSliding();
-
         controller.Move(velocity * Time.deltaTime, directionalInput);
 
         //Stop the accumulation of gravity if we're move moving up or down
