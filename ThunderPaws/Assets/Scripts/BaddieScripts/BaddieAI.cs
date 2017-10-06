@@ -16,8 +16,18 @@ public class BaddieAI : MonoBehaviour {
 
     private bool _searchingForPlayer = false;
 
+    public float moveSpeed = 6f;
+    Vector3 velocity;
+    float accelerationTimeAirborn = 0.2f;//change direction a little slower when in the air
+    float accelerationTimeGrounded = 0.1f;
+    float velocityXSmoothing;
+    float gravity;
+    public float maxJumpHeight = 4f;//how high
+    public float minJumpHeight = 1f;
+    public float timeToJumpApex = 0.4f;//how long till they reach highest point
+
     //determines the actions taken
-    public enum BaddieState { NEUTRAL=0, ATTACK=1};
+    public enum BaddieState { NEUTRAL=0, WARNING=1, ATTACK=2};
     private BaddieState _state;
     public BaddieState state { get { return _state; } }
 
@@ -25,6 +35,7 @@ public class BaddieAI : MonoBehaviour {
     // x > 15 baddie won't be able to see player
     public float dangerRange = 10f;  //baddie will attack on site
 
+    Color debugColor = Color.white;
 
     private void Awake() {
         _state = BaddieState.NEUTRAL;
@@ -58,20 +69,27 @@ public class BaddieAI : MonoBehaviour {
             }
             return;
         }
-
-        if(_state == BaddieState.ATTACK) {
+        if(_state == BaddieState.NEUTRAL) {
+            CalculateVelocity();
+            //move around
+           // Explore();
+        }else if(_state == BaddieState.ATTACK) {
             LockOnTarget();
         }
 
         //Just for now TODO: change this 
         switch (_state) {
             case BaddieState.NEUTRAL:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+                gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.green;
+                break;
+            case BaddieState.WARNING:
+                gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.yellow;
                 break;
             case BaddieState.ATTACK:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.red;
+                gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.red;
                 break;
         }
+
     }
 
     private void UpdateState() {
@@ -79,9 +97,11 @@ public class BaddieAI : MonoBehaviour {
         float distanceToTarget = transform.position.x - target.transform.position.x;
         if(target != null) {
             if(Mathf.Abs(distanceToTarget) <= dangerRange) {
+                debugColor = Color.red;
                 //attack!
                 _state = BaddieState.ATTACK;
             } else {
+                debugColor = Color.white;
                 _state = BaddieState.NEUTRAL;
             }
         }
@@ -101,6 +121,18 @@ public class BaddieAI : MonoBehaviour {
             InvokeRepeating("UpdateState", 0f, 0.5f);
             yield break;
         }
+    }
+
+    private void CalculateVelocity() {
+        //must calculate x first before dealing with wall sliding
+        gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
+        float targetVelocityX = moveSpeed;
+        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing,accelerationTimeGrounded);
+        velocity.y += gravity * Time.deltaTime;
+    }
+
+    private void Explore() {
+        transform.Translate(velocity * Time.deltaTime);
     }
 
     //When the target no longer exists in game - I.E. died, stop updaing states and shooting 

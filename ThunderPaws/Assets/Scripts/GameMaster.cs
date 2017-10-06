@@ -64,11 +64,11 @@ public class GameMaster : MonoBehaviour {
     public static void KillBaddie(Baddie baddie) {
         //TODO: sound
         //Generate death particles
-        Transform clone = Instantiate(baddie.deathParticles, baddie.transform.position, Quaternion.identity) as Transform;
+        Transform clone = Instantiate(baddie.DeathParticles, baddie.transform.position, Quaternion.identity) as Transform;
         Destroy(clone.gameObject, 3f);
 
         //Generate camera shake
-        instance.camShake.Shake(baddie.shakeAmount, baddie.shakeLength);
+        instance.camShake.Shake(baddie.ShakeAmount, baddie.ShakeLength);
 
         //Generate health drop
        // Instantiate(baddie.healthDrop, baddie.transform.position, Quaternion.identity);
