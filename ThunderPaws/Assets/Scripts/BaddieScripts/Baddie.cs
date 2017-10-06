@@ -22,6 +22,7 @@ public class Baddie : LifeformBase {
     public float ShakeLength = 0.1f;
 
     public bool Jump = false;
+    private Vector2 _previousInput;
 
     private void Start() {
 
@@ -55,7 +56,13 @@ public class Baddie : LifeformBase {
     /// </summary>
     private void ApplyInput() {
 
-        Vector2 inputWalk = new Vector2(Controller.Collisions.FromLeft ? 1f : Controller.Collisions.FromRight ? -1f : Velocity.x == 0 ? 1f : Velocity.x, 0f);
+        if(Controller.Collisions.FromLeft || Velocity == Vector3.zero) {
+            _previousInput = Vector2.right;
+        }else if(Controller.Collisions.FromRight) {
+            _previousInput = Vector2.left;
+        }
+
+        print("velocity = " + Velocity);
         Vector2 inputJump = new Vector2(0f, Random.Range(-1f, 1f));
         if (Jump) {
             //check if user - or NPC - is trying to jump and is standing on the ground
@@ -63,7 +70,8 @@ public class Baddie : LifeformBase {
                 Velocity.y = JumpVelocity;
             }
         } else {
-            float targetVelocityX = inputWalk.x * MoveSpeed;
+            float targetVelocityX = _previousInput.x * MoveSpeed;
+            print("target x = " + targetVelocityX);
             Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
         }
     }
