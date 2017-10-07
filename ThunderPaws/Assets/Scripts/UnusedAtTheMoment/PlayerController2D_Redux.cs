@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Controller2D_Redux))]
+[RequireComponent(typeof(CollisionController2D))]
 public class PlayerController2D_Redux : LifeformBase {
     /// <summary>
     /// Initialize base lifeform class: MoveSpeed, JumpHeight, TimeToJumpApex, AccelerationTimeAirborne, AccelerationTimeGrounded

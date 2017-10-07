@@ -25,7 +25,7 @@ public class GameMaster : MonoBehaviour {
 
     //Delegate for switching weapons
     public delegate void WeaponSwitchCallback(int choice);
-    public WeaponSwitchCallback onWeaponSwitch;
+    public WeaponSwitchCallback OnWeaponSwitch;
 
     //TODO: currency
     //TODO: audio
@@ -53,11 +53,11 @@ public class GameMaster : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Alpha1)) {
             //switch to pistol
             weaponChoice = 1;
-            onWeaponSwitch.Invoke(weaponChoice);
+            OnWeaponSwitch.Invoke(weaponChoice);
         }else if (Input.GetKeyDown(KeyCode.Alpha2)) {
             //switch to machine gun
             weaponChoice = 2;
-            onWeaponSwitch.Invoke(weaponChoice);
+            OnWeaponSwitch.Invoke(weaponChoice);
         }
     }
 
@@ -82,11 +82,11 @@ public class GameMaster : MonoBehaviour {
         --remainingLives;
 
         //Generate death particles
-        Transform clone = Instantiate(player.deathParticles, player.transform.position, Quaternion.identity) as Transform;
+        Transform clone = Instantiate(player.DeathParticles, player.transform.position, Quaternion.identity) as Transform;
         Destroy(clone.gameObject, 3f);
 
         //Generate camera shake
-        instance.camShake.Shake(player.shakeAmount, player.shakeLength);
+        instance.camShake.Shake(player.ShakeAmount, player.ShakeLength);
 
         //kill the player
         instance.KillDashNine(player.gameObject, true);

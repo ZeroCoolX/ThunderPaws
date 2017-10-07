@@ -25,7 +25,7 @@ public class Baddie : LifeformBase {
     private Vector2 _previousInput;
 
     private void Start() {
-
+        //initialize all collisiondetection  values
         InitializePhysicsValues(6f, 4f, 0.4f, 0.2f, 0.1f);
 
         //initialize stats
@@ -42,30 +42,28 @@ public class Baddie : LifeformBase {
     }
 
     void Update() {
-        //do not accumulate gravity if colliding with anythig vertical
+        //Do not accumulate gravity if colliding with anythig vertical
         if (Controller.Collisions.FromBelow || Controller.Collisions.FromAbove) {
             Velocity.y = 0;
         }
-        ApplyInput();
+        CalculateVelocityOffInput();
         ApplyGravity();
         Controller.Move(Velocity * Time.deltaTime);
     }
 
     /// <summary>
-    /// Change direction every 3 seconds
+    /// Change direction either vertical or horizontal an arbitrary amount and some interval
     /// </summary>
-    private void ApplyInput() {
+    private void CalculateVelocityOffInput() {
 
+        //TODO: this is suuuper basic so fix later
         if(Controller.Collisions.FromLeft || Velocity == Vector3.zero) {
             _previousInput = Vector2.right;
         }else if(Controller.Collisions.FromRight) {
             _previousInput = Vector2.left;
         }
-
-        print("velocity = " + Velocity);
         Vector2 inputJump = new Vector2(0f, Random.Range(-1f, 1f));
         if (Jump) {
-            //check if user - or NPC - is trying to jump and is standing on the ground
             if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
                 Velocity.y = JumpVelocity;
             }

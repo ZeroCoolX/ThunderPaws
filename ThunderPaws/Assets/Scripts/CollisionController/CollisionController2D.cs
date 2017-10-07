@@ -6,7 +6,7 @@ using UnityEngine;
 /// Physics controller that can be given to any object with a box collider and it can make use of collision detection
 /// </summary>
 [RequireComponent(typeof(BoxCollider2D))]
-public class Controller2D_Redux : MonoBehaviour {
+public class CollisionController2D : MonoBehaviour {
     /// <summary>
     /// LayerMask to determine which objects we want THIS to collide with
     /// </summary>

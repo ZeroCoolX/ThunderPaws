@@ -44,7 +44,7 @@ public abstract class LifeformBase : MonoBehaviour {
     /// <summary>
     /// collision detection controller
     /// </summary>
-    protected Controller2D_Redux Controller;
+    protected CollisionController2D Controller;
 
     /// <summary>
     /// Set all constant physics values
@@ -61,9 +61,9 @@ public abstract class LifeformBase : MonoBehaviour {
         TimeToJumpApex = timeToJumpApex;
         AccelerationTimeAirborne = accelerationTimeAirborne;
         AccelerationTimeGrounded = accelerationTimeGrounded;
-        //phsyics controller used for all collision detection
-        Controller = GetComponent<Controller2D_Redux>();
-        //calculate gravity and jump velocity
+        //Phsyics controller used for all collision detection
+        Controller = GetComponent<CollisionController2D>();
+        //Calculate gravity and jump velocity
         Gravity = -(2 * JumpHeight) / Mathf.Pow(TimeToJumpApex, 2);
         JumpVelocity = Mathf.Abs(Gravity) * TimeToJumpApex;
         print("Gravity: " + Gravity + "\n Jump Velocity: " + JumpVelocity);
@@ -71,18 +71,10 @@ public abstract class LifeformBase : MonoBehaviour {
 
     /// <summary>
     /// Add the gravity constant to .y component of velocity
+    /// Do not accumulate gravity if colliding with anything vertically
     /// </summary>
     protected void ApplyGravity() {
         Velocity.y += Gravity * Time.deltaTime;
     }
-
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }
