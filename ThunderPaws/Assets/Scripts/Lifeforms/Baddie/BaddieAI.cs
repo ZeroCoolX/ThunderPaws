@@ -2,55 +2,56 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//TODO: add /// documentation
 public class BaddieAI : MonoBehaviour {
 
     //will most always be the player
-    public Transform target;
+    public Transform Target;
     private string _targetTag = "Player";
 
     //mechanics of movement
-    public float turnSpeed = 10f;
-    public Transform armRotationAxis;
+    public float TurnSpeed = 10f;
+    public Transform ArmRotationAxis;
     private bool _armIsLeft = false;
-    public Transform baddieGraphics;
+    public Transform BaddieGraphics;
 
     private bool _searchingForPlayer = false;
 
-    public float moveSpeed = 6f;
-    Vector3 velocity;
-    float accelerationTimeAirborn = 0.2f;//change direction a little slower when in the air
-    float accelerationTimeGrounded = 0.1f;
-    float velocityXSmoothing;
-    float gravity;
-    public float maxJumpHeight = 4f;//how high
-    public float minJumpHeight = 1f;
-    public float timeToJumpApex = 0.4f;//how long till they reach highest point
+    public float MoveSpeed = 6f;
+    Vector3 Velocity;
+    float AccelerationTimeAirborn = 0.2f;//change direction a little slower when in the air
+    float AccelerationTimeGrounded = 0.1f;
+    float VelocityXSmoothing;
+    float Gravity;
+    public float MaxJumpHeight = 4f;//how high
+    public float MinJumpHeight = 1f;
+    public float TimeToJumpApex = 0.4f;//how long till they reach highest point
 
     //determines the actions taken
     public enum BaddieState { NEUTRAL=0, WARNING=1, ATTACK=2};
     private BaddieState _state;
-    public BaddieState state { get { return _state; } }
+    public BaddieState State { get { return _state; } }
 
     [Header("Ranges")]
     // x > 15 baddie won't be able to see player
-    public float dangerRange = 10f;  //baddie will attack on site
+    public float DangerRange = 10f;  //baddie will attack on site
 
-    Color debugColor = Color.white;
+    Color DebugColor = Color.white;
 
     private void Awake() {
         _state = BaddieState.NEUTRAL;
     }
 
     private void Start() {
-        baddieGraphics = transform.FindChild("Graphics");
-        if (baddieGraphics == null) {
+        BaddieGraphics = transform.FindChild("Graphics");
+        if (BaddieGraphics == null) {
             //couldn't find player graphics 
             Debug.LogError("Cannot find Graphics on baddie");
             throw new MissingReferenceException();
         }
 
         //Search for the target in game if there isn't one set - meaning he died and is respawning
-        if (target == null) {
+        if (Target == null) {
             //Player might be dead so search
             if (!_searchingForPlayer) {//there is no target so search
                 CoolOffBaddie();
@@ -63,7 +64,7 @@ public class BaddieAI : MonoBehaviour {
     }
 
     private void Update() {
-        if(target == null) {
+        if(Target == null) {
             //Player might be dead so search
             if (!_searchingForPlayer) {//there is no target so search
                 CoolOffBaddie();
@@ -95,14 +96,14 @@ public class BaddieAI : MonoBehaviour {
 
     private void UpdateState() {
         //get the distance between them
-        float distanceToTarget = transform.position.x - target.transform.position.x;
-        if(target != null) {
-            if(Mathf.Abs(distanceToTarget) <= dangerRange) {
-                debugColor = Color.red;
+        float distanceToTarget = transform.position.x - Target.transform.position.x;
+        if(Target != null) {
+            if(Mathf.Abs(distanceToTarget) <= DangerRange) {
+                DebugColor = Color.red;
                 //attack!
                 _state = BaddieState.ATTACK;
             } else {
-                debugColor = Color.white;
+                DebugColor = Color.white;
                 _state = BaddieState.NEUTRAL;
             }
         }
@@ -116,7 +117,7 @@ public class BaddieAI : MonoBehaviour {
             StartCoroutine(SearchForPlayer());
         }else {
             //Found the player - set it as the target and stop searching and reinvoke the state updating
-            target = searchResult.transform;
+            Target = searchResult.transform;
             _searchingForPlayer = false;
             //twice a second look around for the target
             InvokeRepeating("UpdateState", 0f, 0.5f);
@@ -126,14 +127,14 @@ public class BaddieAI : MonoBehaviour {
 
     private void CalculateVelocity() {
         //must calculate x first before dealing with wall sliding
-        gravity = -(2 * maxJumpHeight) / Mathf.Pow(timeToJumpApex, 2);
-        float targetVelocityX = moveSpeed;
-        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing,accelerationTimeGrounded);
-        velocity.y += gravity * Time.deltaTime;
+        Gravity = -(2 * MaxJumpHeight) / Mathf.Pow(TimeToJumpApex, 2);
+        float targetVelocityX = MoveSpeed;
+        Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing,AccelerationTimeGrounded);
+        Velocity.y += Gravity * Time.deltaTime;
     }
 
     private void Explore() {
-        transform.Translate(velocity * Time.deltaTime);
+        transform.Translate(Velocity * Time.deltaTime);
     }
 
     //When the target no longer exists in game - I.E. died, stop updaing states and shooting 
@@ -149,16 +150,16 @@ public class BaddieAI : MonoBehaviour {
 
     private void LockOnTarget() {
         //rotate left or right to face target
-        float faceDir = target.position.x - transform.position.x;
-        baddieGraphics.rotation = Quaternion.Euler(0f, faceDir <= 0 ? -180f : 360f, 0f);
+        float faceDir = Target.position.x - transform.position.x;
+        BaddieGraphics.rotation = Quaternion.Euler(0f, faceDir <= 0 ? -180f : 360f, 0f);
 
-        Vector3 diff = target.position - armRotationAxis.position;
+        Vector3 diff = Target.position - ArmRotationAxis.position;
         //Normalize the vector x + y + z = 1
         diff.Normalize();
         //find the angle in degrees
         float rotZ = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
         //apply the rotation
-        armRotationAxis.rotation = Quaternion.Euler(0f, 0f, rotZ);//degrees not radians
+        ArmRotationAxis.rotation = Quaternion.Euler(0f, 0f, rotZ);//degrees not radians
 
         //invert the arm only iff necessary
         if (faceDir <= 0 && !_armIsLeft) {
@@ -172,9 +173,9 @@ public class BaddieAI : MonoBehaviour {
         _armIsLeft = !_armIsLeft;
 
         // Multiply the player's x local scale by -1.
-        Vector3 theScale = armRotationAxis.localScale;
+        Vector3 theScale = ArmRotationAxis.localScale;
         theScale.y *= -1;
-        armRotationAxis.localScale = theScale;
+        ArmRotationAxis.localScale = theScale;
     }
 
 

@@ -4,6 +4,9 @@ using UnityEngine;
 
 [RequireComponent(typeof(Player))]
 public class PlayerInput : MonoBehaviour {
+    /// <summary>
+    /// Player reference
+    /// </summary>
     Player Player;
 
 	

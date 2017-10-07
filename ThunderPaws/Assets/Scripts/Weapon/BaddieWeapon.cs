@@ -3,65 +3,85 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class BaddieWeapon : AbstractWeapon {
+    /// <summary>
+    /// Deprecated.
+    /// Used to modify the y value of the shot trajoctory
+    /// </summary>
     [Header("Mutator Attributes")]
-    public float shotYMutatorLow = 0.5f;
-    public float shotYMutatorHigh = 1.5f;
-    private BaddieAI baddieAI;
+    public float ShotYMutatorLow = 0.5f;
+    /// <summary>
+    /// Deprecated.
+    /// Used to modify the x value of the shot trajectory
+    /// </summary>
+    public float ShotYMutatorHigh = 1.5f;
 
-    public LayerMask whatToHit;
+    /// <summary>
+    /// Baddie AI reference
+    /// </summary>
+    private BaddieAI _baddieAI;
+    /// <summary>
+    /// Layermask indicating what to hit
+    /// </summary>
+    public LayerMask WhatToHit;
 
     protected void Start() {
         base.Start();
-        baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
-        if(baddieAI == null) {
+        _baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
+        if(_baddieAI == null) {
             Debug.LogError("Weapon.cs: No BaddieAI script found on Baddie");
             throw new MissingReferenceException();
         }
     }
 
     private void Update() {
-        //if the target is within the killzone, shoot
-        if (baddieAI.state == BaddieAI.BaddieState.ATTACK && Time.time > _timeToFire) {//TODO: more intelligent ai
-            //update time to fire
-            _timeToFire = Time.time + 1 / fireRate;
+        //If the target is within the killzone, shoot
+        if (_baddieAI.State == BaddieAI.BaddieState.ATTACK && Time.time > _timeToFire) {
+            //Update time to fire
+            _timeToFire = Time.time + 1 / FireRate;
             Shoot();
         }
     }
 
-    //Uses the defined high and low values to get a random number between them multiplied by either 1 or -1 for high shots or low shots
-    //Useful - but not atm
+    /// <summary>
+    /// Uses the defined high and low values to get a random number between them multiplied by either 1 or -1 for high shots or low shots
+    /// </summary>
+    /// <returns></returns>
     private float GetShotMutator() {
-        return (Random.Range(shotYMutatorLow, shotYMutatorHigh) * (Random.Range(0,2)*2-1));
+        return (Random.Range(ShotYMutatorLow, ShotYMutatorHigh) * (Random.Range(0,2)*2-1));
 
     }
 
-    //fire a projectile
+    /// <summary>
+    /// Fire a projectile
+    /// </summary>
     private void Shoot() {
-        //store mouse position (B)
-        Vector2 targetPosition = new Vector2(baddieAI.target.position.x, baddieAI.target.position.y /*+ GetShotMutator()*/);
-        //store bullet origin spawn popint (A)
-        Vector2 firePointPosition = new Vector2(firePoint.position.x, firePoint.position.y);
-        //collect the hit data - distance and direction from A -> B
-        RaycastHit2D shot = Physics2D.Raycast(firePointPosition, targetPosition - firePointPosition, 100, whatToHit);
+        //Store mouse position (B)
+        Vector2 targetPosition = new Vector2(_baddieAI.Target.position.x, _baddieAI.Target.position.y /*+ GetShotMutator()*/);
+        //Store bullet origin spawn popint (A)
+        Vector2 firePointPosition = new Vector2(FirePoint.position.x, FirePoint.position.y);
+        //Collect the hit data - distance and direction from A -> B
+        RaycastHit2D shot = Physics2D.Raycast(firePointPosition, targetPosition - firePointPosition, 100, WhatToHit);
 
 
-        //generate bullet effect
-        if (Time.time >= timeToSpawnEffect) {
-            //bullet effect position data
+        //Generate bullet effect
+        if (Time.time >= TimeToSpawnEffect) {
+            //Bullet effect position data
             Vector3 hitPosition;
             Vector3 hitNormal;
-
-            hitPosition = (targetPosition - firePointPosition) * 100; //arbitrarily large number so the bullet trail flys off the camera
+            //Arbitrarily large number so the bullet trail flys off the camera
+            hitPosition = (targetPosition - firePointPosition) * 100; 
             if (shot.collider != null) {
-                hitNormal = shot.normal;//if we most likely hit something store the normal so the particles make sense when they shoot out
+                //If we most likely hit something store the normal so the particles make sense when they shoot out
+                hitNormal = shot.normal;
                 hitPosition = shot.point;
             } else {
-                hitNormal = new Vector3(999, 999, 999); //rediculously huge so we can use it as a sanity check for the effect
+                //Rediculously huge so we can use it as a sanity check for the effect
+                hitNormal = new Vector3(999, 999, 999); 
             }
 
-            //actually instantiate the effect
-            GenerateEffect(hitPosition, hitNormal, whatToHit);
-            timeToSpawnEffect = Time.time + 1 / effectSpawnRate;
+            //Actually instantiate the effect
+            GenerateEffect(hitPosition, hitNormal, WhatToHit);
+            TimeToSpawnEffect = Time.time + 1 / EffectSpawnRate;
         }
     }
 

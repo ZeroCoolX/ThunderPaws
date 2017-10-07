@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlatformerController : RaycastController {
+public class PlatformerController : RaycastController {//TODO: add /// documentation
     public LayerMask passengerMask;
 
     public Vector3[] localWaypoints;

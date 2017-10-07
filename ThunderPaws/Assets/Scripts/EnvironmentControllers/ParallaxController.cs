@@ -5,19 +5,28 @@ using UnityEngine;
 //Controls  the backgorund scrolling
 public class ParallaxController : MonoBehaviour {
 
-    //Collection of backgrounds to be parallaxed
-    public List<Transform> backgrounds;
-    //proportion of the camera movement to move the backgrounds by
+    /// <summary>
+    /// Collection of backgrounds to be parallaxed
+    /// </summary>
+    public List<Transform> Backgrounds;
+    /// <summary>
+    /// Proportion of the camera movement to move the backgrounds by
+    /// </summary>
     private List<float> _parallaxScales;
-    //How smooth the parallax is going to be. Must be > 0
-    public float parallaxSmoothing = 1f;
+    /// <summary>
+    /// How smooth the parallax is going to be. Must be > 0
+    /// </summary>
+    public float ParallaxSmoothing = 1f;
 
-    //Main camera transform ref
+    /// <summary>
+    /// Main camera transform ref
+    /// </summary>
     private Transform _cam;
-    //Store position of the camera in the previous frame - used for parallax calculation
+    /// <summary>
+    /// Store position of the camera in the previous frame - used for parallax calculation
+    /// </summary>
     private Vector3 _previousCamPosition;
 
-    //Set refs
     private void Awake() {
         _cam = Camera.main.transform;
     }
@@ -33,40 +42,41 @@ public class ParallaxController : MonoBehaviour {
     }
 
     void Update () {
-		//do for each background
-        for(int i = 0; i < backgrounds.Count; ++i) {
+        for(int i = 0; i < Backgrounds.Count; ++i) {
             //Parallax value is the opposite of the cameras movement * scale
             float parallax = (_previousCamPosition.x - _cam.position.x) * _parallaxScales[i];
             //Set a target x position which is the current postition + parallax
-            float backgroundTargetPosX = backgrounds[i].position.x + parallax;
+            float backgroundTargetPosX = Backgrounds[i].position.x + parallax;
             //Create target position which is the backgrounds current position with its target x pos
-            Vector3 backgroundTargetPos = new Vector3(backgroundTargetPosX, backgrounds[i].position.y, backgrounds[i].position.z);
-            //fade between current target position
-            backgrounds[i].position = Vector3.Lerp(backgrounds[i].position, backgroundTargetPos, parallaxSmoothing * Time.deltaTime);
+            Vector3 backgroundTargetPos = new Vector3(backgroundTargetPosX, Backgrounds[i].position.y, Backgrounds[i].position.z);
+            //Fade between current target position
+            Backgrounds[i].position = Vector3.Lerp(Backgrounds[i].position, backgroundTargetPos, ParallaxSmoothing * Time.deltaTime);
         }
 
         //store the previous cam position
         _previousCamPosition = _cam.position;
 	}
 
+    //TODO: Add /// documentation
     private void UpdateParallaxScales() {
-        for (int i = 0; i < backgrounds.Count; ++i) {
+        for (int i = 0; i < Backgrounds.Count; ++i) {
             if(_parallaxScales.Count <= i) {
-                _parallaxScales.Add(backgrounds[i].position.z * -1);
+                _parallaxScales.Add(Backgrounds[i].position.z * -1);
             }else {
-                _parallaxScales[i] = backgrounds[i].position.z * -1;//courtesy of Brackeys
+                _parallaxScales[i] = Backgrounds[i].position.z * -1;
             }
         }
     }
 
+    //TODO: Add /// documentation
     public void AddParallax(Transform newParallax) {
-        backgrounds.Add(newParallax);
+        Backgrounds.Add(newParallax);
         UpdateParallaxScales();
     }
 
-    
+    //TODO: Add /// documentation
     public void RemoveParallax(Transform parallaxToRemove) {
-        backgrounds.Remove(parallaxToRemove);
+        Backgrounds.Remove(parallaxToRemove);
         UpdateParallaxScales();
     }
 }

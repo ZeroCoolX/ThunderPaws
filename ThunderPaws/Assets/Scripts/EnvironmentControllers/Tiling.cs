@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//TODO: add /// documentation
 //TODO: removal of backgrounds are not accurately telling their left and right buddies about it
 [RequireComponent (typeof(SpriteRenderer))] //always make sure we have a sprite renderer
 public class Tiling : MonoBehaviour {
@@ -48,7 +49,7 @@ public class Tiling : MonoBehaviour {
                 leftBuddy.GetComponent<Tiling>().hasRightBuddy = false;
             }
 
-            GameMaster.instance.GetComponent<ParallaxController>().RemoveParallax(transform);
+            GameMaster.Instance.GetComponent<ParallaxController>().RemoveParallax(transform);
 
             Destroy(gameObject);
         }
@@ -95,7 +96,7 @@ public class Tiling : MonoBehaviour {
             newBuddy.GetComponent<Tiling>().hasRightBuddy = true;//same as above
         }
         if (shouldParallax) {//only some backgorund elements should parallax, the back sky should not
-            GameMaster.instance.GetComponent<ParallaxController>().AddParallax(newBuddy);
+            GameMaster.Instance.GetComponent<ParallaxController>().AddParallax(newBuddy);
         }
     }
 }

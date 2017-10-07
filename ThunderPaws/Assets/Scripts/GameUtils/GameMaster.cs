@@ -3,65 +3,98 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameMaster : MonoBehaviour {
-    //singleton for other scripts to access
-    public static GameMaster instance;
+    /// <summary>
+    /// Singleton for other scripts to access
+    /// </summary>
+    public static GameMaster Instance;
 
+    /// <summary>
+    /// Camera instance
+    /// </summary>
     [Header("Scripts")]
-    //Camera instance
-    public CameraShake camShake;
+    public CameraShake CamShake;
 
-    //weapon choice 1, 2,...etc default 1 (pistol)
     [Header("Weapon Data")]
     [SerializeField]
     private int _weaponChoice = 0;
-    public int weaponChoice { get { return _weaponChoice; } set { _weaponChoice = value; } }
+    /// <summary>
+    /// Weapon choice 1, 2,...etc default 1 (pistol)
+    /// </summary>
+    public int WeaponChoice { get { return _weaponChoice; } set { _weaponChoice = value; } }
 
+    /// <summary>
+    /// Max lives per game
+    /// </summary>
     [Header("Health Data")]
     [SerializeField]
     private int _maxLives = 3;
+
     [SerializeField]
     private static int _remainingLives;
-    public static int remainingLives { get { return _remainingLives; } set { _remainingLives = value; } }
+    /// <summary>
+    /// Remaining lives counter must persist through player deaths
+    /// </summary>
+    public static int RemainingLives { get { return _remainingLives; } set { _remainingLives = value; } }
 
-    //Delegate for switching weapons
+    /// <summary>
+    /// Delegate for switching weapons
+    /// </summary>
+    /// <param name="choice"></param>
     public delegate void WeaponSwitchCallback(int choice);
     public WeaponSwitchCallback OnWeaponSwitch;
 
     //TODO: currency
     //TODO: audio
-    public Transform player;
-    public Transform spawnPoint;
-    public int spawnDelay = 2;
-    public GameObject spawnPrefab;
+    /// <summary>
+    /// Player reference for respawning
+    /// </summary>
+    public Transform Player;
+    /// <summary>
+    /// Where to respawn the player 
+    /// </summary>
+    public Transform SpawnPoint;
+    /// <summary>
+    /// How long to wait from player death to respawn
+    /// </summary>
+    public int SpawnDelay = 2;
+    /// <summary>
+    /// Spawn prefab reference
+    /// </summary>
+    public GameObject SpawnPrefab;
 
     private void Awake() {
-        if(instance == null) {
-            instance = GameObject.FindGameObjectWithTag("GM").GetComponent<GameMaster>();
+        if(Instance == null) {
+            Instance = GameObject.FindGameObjectWithTag("GM").GetComponent<GameMaster>();
         }
     }
 
     private void Start() {
-        if(camShake == null) {
+        ///Validate Camera Shake reference
+        if(CamShake == null) {
             Debug.LogError("GameMaster.cs: No CameraShake found");
             throw new MissingComponentException();
         }
-        //set lives
+        //Set remaining lives
         _remainingLives = _maxLives;
     }
 
     private void Update() {
-        //if the user is switching weapons, change the selection, then update the delegate so the player knows to switch
+        //If the user is switching weapons, change the selection, then update the delegate so the player knows to switch
         if (Input.GetKeyDown(KeyCode.Alpha1)) {
-            //switch to pistol
-            weaponChoice = 1;
-            OnWeaponSwitch.Invoke(weaponChoice);
+            //Switch to pistol
+            WeaponChoice = 1;
+            OnWeaponSwitch.Invoke(WeaponChoice);
         }else if (Input.GetKeyDown(KeyCode.Alpha2)) {
-            //switch to machine gun
-            weaponChoice = 2;
-            OnWeaponSwitch.Invoke(weaponChoice);
+            //Switch to machine gun
+            WeaponChoice = 2;
+            OnWeaponSwitch.Invoke(WeaponChoice);
         }
     }
 
+    /// <summary>
+    /// Genreate death particles, shake camera, destroy baddie game object
+    /// </summary>
+    /// <param name="baddie"></param>
     public static void KillBaddie(Baddie baddie) {
         //TODO: sound
         //Generate death particles
@@ -69,42 +102,55 @@ public class GameMaster : MonoBehaviour {
         Destroy(clone.gameObject, 3f);
 
         //Generate camera shake
-        instance.camShake.Shake(baddie.ShakeAmount, baddie.ShakeLength);
+        Instance.CamShake.Shake(baddie.ShakeAmount, baddie.ShakeLength);
 
         //Generate health drop
        // Instantiate(baddie.healthDrop, baddie.transform.position, Quaternion.identity);
 
         //Actually kill it finally
-        instance.KillDashNine(baddie.gameObject, false);
+        Instance.KillDashNine(baddie.gameObject, false);
     }
 
+    /// <summary>
+    /// Decrement lives, generate particles, shake camera and destroy current player reference
+    /// </summary>
+    /// <param name="player"></param>
     public static void KillPlayer(Player player) {
         //decrement lives
-        --remainingLives;
+        --RemainingLives;
 
         //Generate death particles
         Transform clone = Instantiate(player.DeathParticles, player.transform.position, Quaternion.identity) as Transform;
         Destroy(clone.gameObject, 3f);
 
         //Generate camera shake
-        instance.camShake.Shake(player.ShakeAmount, player.ShakeLength);
+        Instance.CamShake.Shake(player.ShakeAmount, player.ShakeLength);
 
         //kill the player
-        instance.KillDashNine(player.gameObject, true);
+        Instance.KillDashNine(player.gameObject, true);
     }
 
-    //Actual destruction of optional respawn
+    /// <summary>
+    /// Actual destruction of optional respawn
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="respawn"></param>
     private void KillDashNine(GameObject obj, bool respawn) {
         Destroy(obj);
         if (respawn) { 
-            instance.StartCoroutine(instance.RespawnPlayer());
+            Instance.StartCoroutine(Instance.RespawnPlayer());
         }
     }
 
-    private IEnumerator RespawnPlayer() {//TODO: spawn sound
-        yield return new WaitForSeconds(spawnDelay);
-        Instantiate(player, spawnPoint.position, spawnPoint.rotation);
-        GameObject clone = Instantiate(spawnPrefab, spawnPoint.position, spawnPoint.rotation) as GameObject;
+    /// <summary>
+    /// Respawn player
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator RespawnPlayer() {
+        //TODO: spawn sound
+        yield return new WaitForSeconds(SpawnDelay);
+        Instantiate(Player, SpawnPoint.position, SpawnPoint.rotation);
+        GameObject clone = Instantiate(SpawnPrefab, SpawnPoint.position, SpawnPoint.rotation) as GameObject;
         Destroy(clone, 3f);
     }
 

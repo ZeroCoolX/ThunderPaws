@@ -4,9 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class StatusIndicator : MonoBehaviour {
-
+    /// <summary>
+    /// Rectangle that indicates health level
+    /// </summary>
     [SerializeField]
     private RectTransform healthBarRect;
+    /// <summary>
+    /// Text within rectangle indicating health level
+    /// </summary>
     [SerializeField]
     private Text healthText;
 
@@ -21,10 +26,15 @@ public class StatusIndicator : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Update health references and visual indicator
+    /// </summary>
+    /// <param name="_cur"></param>
+    /// <param name="_max"></param>
     public void SetHealth(int _cur, int _max) {
-        //calculate percentage of max health
+        //Calculate percentage of max health
         float value = (float)_cur / _max;
-        //TODO: change color of bar over time
+        //TODO: Change color of bar over time
         healthBarRect.localScale = new Vector3(value, healthBarRect.localScale.y, healthBarRect.localScale.z);
         healthText.text = (_cur + "/" + _max + " HP");
     }

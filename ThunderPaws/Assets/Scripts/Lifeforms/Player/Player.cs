@@ -93,9 +93,9 @@ public class Player : LifeformBase {
         }
 
         //Set default weapon (Pistol) and Add weapon switching logic to GameMaster delegate
-        SelectWeapon(GameMaster.instance.weaponChoice);
+        SelectWeapon(GameMaster.Instance.WeaponChoice);
         //Add the weapon switch method onto the weaponSwitch delegate
-        GameMaster.instance.OnWeaponSwitch += SelectWeapon;
+        GameMaster.Instance.OnWeaponSwitch += SelectWeapon;
 
         //Regenerate health over time
         //TODO: Only invoke regen if health < max

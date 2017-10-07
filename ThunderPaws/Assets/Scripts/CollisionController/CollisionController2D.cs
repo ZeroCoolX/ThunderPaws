@@ -53,6 +53,13 @@ public class CollisionController2D : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// Update raycast origins to where we're moving to.
+    /// Reset collisions.
+    /// Calculate both vertical and horizontal collisions.
+    /// Move object
+    /// </summary>
+    /// <param name="velocity"></param>
     public void Move(Vector3 velocity) {
         UpdateRaycasyOrigins();
         Collisions.Reset();
