@@ -78,14 +78,14 @@ public class Player : LifeformBase {
         InitializePhysicsValues(6f, 4f, 0.4f, 0.2f, 0.1f);
 
         //Set the PlayerStats singleton and initialize
-        _stats = PlayerStats.instance;
-        _stats.curHealth = _stats.maxHealth;
+        _stats = PlayerStats.Instance;
+        _stats.CurHealth = _stats.MaxHealth;
 
         //Validate StatusIndicator
         if(_statusIndicator == null) {
             Debug.LogError("No status indicator found");
         }
-        _statusIndicator.SetHealth(_stats.curHealth, _stats.maxHealth);
+        _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
 
         //Validate DeathParticles
         if(DeathParticles == null) {
@@ -99,7 +99,7 @@ public class Player : LifeformBase {
 
         //Regenerate health over time
         //TODO: Only invoke regen if health < max
-        InvokeRepeating("RegenHealth", 1f / _stats.healthRegenRate, 1f / _stats.healthRegenRate);
+        InvokeRepeating("RegenHealth", 1f / _stats.HealthRegenRate, 1f / _stats.HealthRegenRate);
     }
 
     void Update() {
@@ -156,7 +156,7 @@ public class Player : LifeformBase {
     /// Check health and kill if necessary
     /// </summary>
     private void LifeCheck() {
-        if(_stats.curHealth <= 0) {
+        if(_stats.CurHealth <= 0) {
             GameMaster.KillPlayer(this);
         }else {
             //TODO: audio
@@ -169,9 +169,9 @@ public class Player : LifeformBase {
     /// </summary>
     /// <param name="dmg"></param>
     public void DamageHealth(int dmg) {
-        _stats.curHealth -= dmg;
+        _stats.CurHealth -= dmg;
         if(_statusIndicator != null) {
-            _statusIndicator.SetHealth(_stats.curHealth, _stats.maxHealth);
+            _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
         }
         LifeCheck();
     } 
@@ -180,8 +180,8 @@ public class Player : LifeformBase {
     /// Increment health by a small amount and update visual healthbar
     /// </summary>
     private void RegenHealth() {
-        _stats.curHealth += _stats.healthRegenValue;
-        _statusIndicator.SetHealth(_stats.curHealth, _stats.maxHealth);
+        _stats.CurHealth += _stats.HealthRegenValue;
+        _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
     }
 
     /// <summary>

@@ -7,38 +7,65 @@ public class Baddie : LifeformBase {
     /// <summary>
     /// Baddie Stats reference
     /// </summary>
-    BaddieStats Stats = new BaddieStats();
-
+    private BaddieStats _stats;
+    /// <summary>
+    /// Particle reference to play on destruct
+    /// </summary>
     public Transform DeathParticles;
+    /// <summary>
+    /// Health object that drops when baddie dies
+    /// </summary>
     public Transform HealthDrop;
+    /// <summary>
+    /// Amount of health to drop on death
+    /// </summary>
     public int HealthDropAmount = 10;
 
-    [Header("Optional: ")]
+    /// <summary>
+    /// Visual status indicator displaying health
+    /// </summary>
     [SerializeField]
     private StatusIndicator _statusIndicator;
 
-    //for death camera shake
+    /// <summary>
+    /// Amount to shake camera by
+    /// </summary>
     public float ShakeAmount = 0.05f;
+    /// <summary>
+    /// How long to shake camera for
+    /// </summary>
     public float ShakeLength = 0.1f;
 
+    /// <summary>
+    ///  USED FOR TESTING ONLY.
+    ///  Indicates the type of movement to be acted. 
+    /// </summary>
     public bool Jump = false;
+    /// <summary>
+    ///  USED FOR TESTING ONLY.
+    ///  Stores the generated input until it changes. 
+    /// </summary>
     private Vector2 _previousInput;
 
     private void Start() {
-        //initialize all collisiondetection  values
+        //Set all physics values
         InitializePhysicsValues(6f, 4f, 0.4f, 0.2f, 0.1f);
 
-        //initialize stats
-        Stats.Initialize();
-        //set baddie health
-        if(_statusIndicator != null) {
-            _statusIndicator.SetHealth(Stats.CurHealth, Stats.MaxHealth);
+        //Confirm stats component and initialize
+        _stats = transform.GetComponent<BaddieStats>();
+        if(_stats == null) {
+            Debug.LogError("No BaddieStats found on Baddie");
         }
+        _stats.Initialize();
 
+        //Validate Status indicator
+        if (_statusIndicator != null) {
+            _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
+        }
+        //Validate Death particles are set
         if(DeathParticles == null) {
             Debug.LogError("No death particles found");
         }
-        //TODO: add user interface
     }
 
     void Update() {
@@ -52,11 +79,12 @@ public class Baddie : LifeformBase {
     }
 
     /// <summary>
+    /// Contents are temporary for testing. AI movement script not written yet.
     /// Change direction either vertical or horizontal an arbitrary amount and some interval
     /// </summary>
     private void CalculateVelocityOffInput() {
 
-        //TODO: this is suuuper basic so fix later
+        //TODO: Movement should be based off AI Movement scripting
         if(Controller.Collisions.FromLeft || Velocity == Vector3.zero) {
             _previousInput = Vector2.right;
         }else if(Controller.Collisions.FromRight) {
@@ -74,41 +102,28 @@ public class Baddie : LifeformBase {
         }
     }
 
+    /// <summary>
+    /// Check the stats to see if we need to destroy the object
+    /// </summary>
     private void LifeCheck() {
         //Kill the baddie
-        if (Stats.CurHealth <= 0) {
+        if (_stats.CurHealth <= 0) {
             GameMaster.KillBaddie(this);
         } else {
-            //Not dead just hurt
-            //TODO: audio and maybe color flash or something to visually indicate
+            //TODO: Add audio
         }
     }
     
+    /// <summary>
+    /// Decrement health and check for life
+    /// </summary>
+    /// <param name="dmg"></param>
     public void DamageHealth(int dmg) {
         //Damage baddie and check vitals
-        Stats.CurHealth -= dmg;
+        _stats.CurHealth -= dmg;
         if(_statusIndicator != null) {
-            _statusIndicator.SetHealth(Stats.CurHealth, Stats.MaxHealth);
+            _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
         }
         LifeCheck();
-    }
-
-    /// <summary>
-    /// Basic stats class
-    /// </summary>
-    [System.Serializable]
-    public class BaddieStats {
-        public int MaxHealth = 100;
-        private int _curHealth;
-        public int CurHealth {
-            get { return _curHealth; }
-            set { _curHealth = Mathf.Clamp(value, 0, MaxHealth); }
-        }
-
-        public int Damage = 5;
-
-        public void Initialize() {
-            CurHealth = MaxHealth;
-        }
     }
 }
