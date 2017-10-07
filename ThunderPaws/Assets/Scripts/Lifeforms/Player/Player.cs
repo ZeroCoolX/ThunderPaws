@@ -14,6 +14,10 @@ public class Player : LifeformBase {
     /// </summary>
     [SerializeField]
     private StatusIndicator _statusIndicator;
+    /// <summary>
+    /// Animator reference for sprite animations
+    /// </summary>
+    private Animator Animator;
 
     /// <summary>
     /// Amount to shake the camera by
@@ -68,10 +72,17 @@ public class Player : LifeformBase {
         PlayerGraphics = transform.FindChild("Graphics");
         if (PlayerGraphics == null) {
             Debug.LogError("No Graphics on player found");
+            throw new UnassignedReferenceException();
         }
         PlayerArm = transform.FindChild("arm");
         if (PlayerArm == null) {
             Debug.LogError("No Player Arm on player found");
+            throw new UnassignedReferenceException();
+        }
+        Animator = GetComponent<Animator>();
+        if(Animator == null) {
+            Debug.LogError("No Animator on player found");
+            throw new MissingComponentException();
         }
 
         //Set all physics values
@@ -84,12 +95,14 @@ public class Player : LifeformBase {
         //Validate StatusIndicator
         if(_statusIndicator == null) {
             Debug.LogError("No status indicator found");
+            throw new UnassignedReferenceException();
         }
         _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
 
         //Validate DeathParticles
         if(DeathParticles == null) {
             Debug.LogError("No player death particles found");
+            throw new UnassignedReferenceException();
         }
 
         //Set default weapon (Pistol) and Add weapon switching logic to GameMaster delegate
@@ -209,7 +222,7 @@ public class Player : LifeformBase {
             }
         }
         //Multiply by input so animation plays only when input is supplied instead of all the time because its a moving platform
-        //animator.SetFloat("Speed", Mathf.Max(Mathf.Abs(moveAmount.x), Mathf.Abs(moveAmount.y)) * (input.Equals(Vector2.zero) ? 0 : 1));
+        Animator.SetFloat("Speed", Mathf.Max(Mathf.Abs(Velocity.x), Mathf.Abs(Velocity.y)) * (DirectionalInput.Equals(Vector2.zero) ? 0 : 1));
     }
 
     /// <summary>

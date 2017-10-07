@@ -7,7 +7,7 @@ public class Bullet : MonoBehaviour {
     /// <summary>
     /// How fast the bullet travels
     /// </summary>
-    public float MoveSpeed = 10f;
+    public float MoveSpeed = 30f;
 
     /// <summary>
     /// How much damage this bullet does
@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour {
     /// <summary>
     /// Prefab referense for hit particles
     /// </summary>
-    public Transform hitPrefab;
+    public Transform HitPrefab;
     /// <summary>
     /// LayerMask indicating what to hit
     /// </summary>
@@ -35,7 +35,7 @@ public class Bullet : MonoBehaviour {
 
     private void Start() {
         //Validate the hit prefab is set
-        if(hitPrefab == null) {
+        if(HitPrefab == null) {
             Debug.LogError("No HitPrefab was found on bullet");
             throw new UnassignedReferenceException();
         }
@@ -120,7 +120,7 @@ public class Bullet : MonoBehaviour {
         }
 
         //Mask it so when we hit something the particles shoot OUT from it.
-        Transform hitParticles = Instantiate(hitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
+        Transform hitParticles = Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
         //Destroy hit particles
         Destroy(hitParticles.gameObject, 1f);
         Destroy(gameObject);
