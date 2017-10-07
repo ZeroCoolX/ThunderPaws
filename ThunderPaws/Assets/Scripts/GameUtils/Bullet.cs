@@ -23,6 +23,7 @@ public class Bullet : MonoBehaviour {
     private void Start() {
         if(hitPrefab == null) {
             Debug.LogError("No HitPrefab was found on bullet");
+            throw new UnassignedReferenceException();
         }
     }
 

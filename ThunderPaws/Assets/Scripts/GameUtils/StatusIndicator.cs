@@ -13,9 +13,11 @@ public class StatusIndicator : MonoBehaviour {
     private void Start() {
         if(healthBarRect == null) {
             Debug.LogError("No HealthBarRect found");
+            throw new UnassignedReferenceException();
         }
         if (healthText == null) {
             Debug.LogError("No HealthText found");
+            throw new UnassignedReferenceException();
         }
     }
 

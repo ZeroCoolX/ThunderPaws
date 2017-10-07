@@ -15,6 +15,7 @@ public class BaddieWeapon : AbstractWeapon {
         baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
         if(baddieAI == null) {
             Debug.LogError("Weapon.cs: No BaddieAI script found on Baddie");
+            throw new MissingReferenceException();
         }
     }
 

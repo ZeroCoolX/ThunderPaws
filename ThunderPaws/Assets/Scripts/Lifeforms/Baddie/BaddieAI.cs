@@ -46,6 +46,7 @@ public class BaddieAI : MonoBehaviour {
         if (baddieGraphics == null) {
             //couldn't find player graphics 
             Debug.LogError("Cannot find Graphics on baddie");
+            throw new MissingReferenceException();
         }
 
         //Search for the target in game if there isn't one set - meaning he died and is respawning
@@ -140,7 +141,7 @@ public class BaddieAI : MonoBehaviour {
         _searchingForPlayer = true;
         //Tell the weapon to stop shooting
         _state = BaddieState.NEUTRAL;
-        gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+        gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.white;
         //Cancel the state update until we have a target to actually update our state for
         CancelInvoke("UpdateState");
         StartCoroutine(SearchForPlayer());

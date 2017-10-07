@@ -55,6 +55,7 @@ public class Baddie : LifeformBase {
         _stats = transform.GetComponent<BaddieStats>();
         if(_stats == null) {
             Debug.LogError("No BaddieStats found on Baddie");
+            throw new MissingComponentException();
         }
         _stats.Initialize();
 
@@ -65,6 +66,7 @@ public class Baddie : LifeformBase {
         //Validate Death particles are set
         if(DeathParticles == null) {
             Debug.LogError("No death particles found");
+            throw new UnassignedReferenceException();
         }
     }
 

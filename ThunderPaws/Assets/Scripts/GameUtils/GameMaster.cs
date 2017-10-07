@@ -43,6 +43,7 @@ public class GameMaster : MonoBehaviour {
     private void Start() {
         if(camShake == null) {
             Debug.LogError("GameMaster.cs: No CameraShake found");
+            throw new MissingComponentException();
         }
         //set lives
         _remainingLives = _maxLives;

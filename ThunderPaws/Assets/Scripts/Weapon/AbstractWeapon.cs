@@ -28,6 +28,7 @@ public abstract class AbstractWeapon : MonoBehaviour {
     protected void Start () {
         if (firePoint == null) {
             Debug.LogError("AbstractWeapon.cs: No firePoint found");
+            throw new UnassignedReferenceException();
         }
     }
 

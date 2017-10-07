@@ -17,6 +17,7 @@ public class Weapon : AbstractWeapon {
         _camShake = GameMaster.instance.GetComponent<CameraShake>();
         if(_camShake == null) {
             Debug.LogError("Weapon.cs: No CameraShake found on game master");
+            throw new MissingComponentException();
         }
     }
 
