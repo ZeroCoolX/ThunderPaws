@@ -50,6 +50,19 @@ public class Player : LifeformBase {
     /// </summary>
     public Transform PlayerArm;
     /// <summary>
+    /// Reference to the companion anchor.
+    /// When the sprite flips direction so does the position of where thecompanion floats
+    /// </summary>
+    public Transform CompanionAnchor;
+    /// <summary>
+    /// Value used to move the companion anchor when the player flips its body.
+    /// </summary>
+    private float _companionFlipOffset;
+    /// <summary>
+    /// Companion reference 
+    /// </summary>
+    public Transform Companion;
+    /// <summary>
     /// Indicates player is facing right
     /// </summary>
     private bool _facingRight = true;
@@ -83,6 +96,13 @@ public class Player : LifeformBase {
         if(Animator == null) {
             Debug.LogError("No Animator on player found");
             throw new MissingComponentException();
+        }
+        CompanionAnchor = transform.FindChild("CompanionOrigin");
+        if(CompanionAnchor == null) {
+            //This might be okay because they won't always have a companion
+            Debug.Log("CompanionOrigin was null");
+        }else {
+            CalculateCompanionFlipOffset();
         }
 
         //Set all physics values
@@ -124,6 +144,10 @@ public class Player : LifeformBase {
         ApplyGravity();
         Controller.Move(Velocity * Time.deltaTime);
         CalculatePlayerFacing();
+    }
+
+    private void CalculateCompanionFlipOffset() {
+        _companionFlipOffset = Vector3.Distance(CompanionAnchor.position, transform.position);
     }
 
     public void SetDirectionalInput(Vector2 input) {
@@ -236,6 +260,14 @@ public class Player : LifeformBase {
         Vector3 theScale = PlayerGraphics.localScale;
         theScale.x *= -1;
         PlayerGraphics.localScale = theScale;
+        FlipCompanionAnchorDelayed();
+    }
+
+    private void FlipCompanionAnchorDelayed() {
+        Vector3 newPos = CompanionAnchor.position;
+        float newX = newPos.x + (2 * _companionFlipOffset * (_facingRight ? -1f : 1f));
+        newPos.x = newX;
+        CompanionAnchor.position = newPos;
     }
 
     /// <summary>

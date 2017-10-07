@@ -73,8 +73,6 @@ public class BaddieAI : MonoBehaviour {
         }
         if(_state == BaddieState.NEUTRAL) {
             CalculateVelocity();
-            //move around
-           // Explore();
         }else if(_state == BaddieState.ATTACK) {
             LockOnTarget();
         }
@@ -95,17 +93,22 @@ public class BaddieAI : MonoBehaviour {
     }
 
     private void UpdateState() {
-        //get the distance between them
-        float distanceToTarget = transform.position.x - Target.transform.position.x;
-        if(Target != null) {
-            if(Mathf.Abs(distanceToTarget) <= DangerRange) {
-                DebugColor = Color.red;
-                //attack!
-                _state = BaddieState.ATTACK;
-            } else {
-                DebugColor = Color.white;
-                _state = BaddieState.NEUTRAL;
+        try {
+            //get the distance between them
+            float distanceToTarget = transform.position.x - Target.transform.position.x;
+            if (Target != null) {
+                if (Mathf.Abs(distanceToTarget) <= DangerRange) {
+                    DebugColor = Color.red;
+                    //attack!
+                    _state = BaddieState.ATTACK;
+                } else {
+                    DebugColor = Color.white;
+                    _state = BaddieState.NEUTRAL;
+                }
             }
+        }catch(UnityException e) {
+            print("Error trying to update baddie state: " + e.Message);
+            CoolOffBaddie();
         }
     }
 
