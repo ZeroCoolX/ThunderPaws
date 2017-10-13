@@ -19,13 +19,12 @@ public class CompanionFollow : FollowBase {
             FindPlayer();
             return;
         }
-
         //Only update lookahead position if accelerating or changing direction
         float xMoveDelta = (Target.position - LastTargetPosition).x;
         bool updateLookAheadTarget = Mathf.Abs(xMoveDelta) > LookAheadMoveThreshold;
         if (updateLookAheadTarget) {
             LookAheadPos = LookAheadFactor * Vector2.right * Mathf.Sign(xMoveDelta);
-        }else {
+        } else {
             LookAheadPos = Vector3.MoveTowards(LookAheadPos, Vector3.zero, Time.deltaTime * LookAheadReturnSpeed);
         }
 
@@ -33,13 +32,14 @@ public class CompanionFollow : FollowBase {
         Vector3 newPos = Vector3.SmoothDamp(transform.position, aheadTargetPos, ref CurrentVelocity, Dampening);
 
         //If we're not moving - idle
-        if(xMoveDelta == 0) {
+        if (xMoveDelta == 0) {
             Companion.Idle = true;
-        }else {
+        } else {
             Companion.Idle = false;
             transform.position = newPos;
             LastTargetPosition = Target.position;
         }
-	}
 
+        
+    }
 }

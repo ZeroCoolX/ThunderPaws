@@ -295,4 +295,8 @@ public class Player : LifeformBase {
         PlayerArm.transform.localPosition = theScale;
     }
 
+    protected override void ApplyGravity() {
+        Velocity.y += Gravity * Time.deltaTime;
+    }
+
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,6 +34,10 @@ public class PlayerController2D_Redux : LifeformBase {
         }
         float targetVelocityX = input.x * MoveSpeed;
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+    }
+
+    protected override void ApplyGravity() {
+        throw new NotImplementedException();
     }
 
 }

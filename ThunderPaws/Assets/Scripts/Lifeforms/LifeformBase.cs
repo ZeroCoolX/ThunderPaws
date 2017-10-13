@@ -55,7 +55,7 @@ public abstract class LifeformBase : MonoBehaviour {
     /// <param name="timeToJumpApex"></param>
     /// <param name="accelerationTimeAirborne"></param>
     /// <param name="accelerationTimeGrounded"></param>
-    protected void InitializePhysicsValues(float moveSpeed, float jumpHeight, float timeToJumpApex, float accelerationTimeAirborne, float accelerationTimeGrounded) {
+    protected void InitializePhysicsValues(float moveSpeed, float jumpHeight, float timeToJumpApex, float accelerationTimeAirborne, float accelerationTimeGrounded, float gravity = 0) {
         MoveSpeed = moveSpeed;
         JumpHeight = jumpHeight;
         TimeToJumpApex = timeToJumpApex;
@@ -64,7 +64,11 @@ public abstract class LifeformBase : MonoBehaviour {
         //Phsyics controller used for all collision detection
         Controller = GetComponent<CollisionController2D>();
         //Calculate gravity and jump velocity
-        Gravity = -(2 * JumpHeight) / Mathf.Pow(TimeToJumpApex, 2);
+        if (gravity == 0) {
+            Gravity = -(2 * JumpHeight) / Mathf.Pow(TimeToJumpApex, 2);
+        }else {
+            Gravity = gravity;
+        }
         JumpVelocity = Mathf.Abs(Gravity) * TimeToJumpApex;
         print("Gravity: " + Gravity + "\n Jump Velocity: " + JumpVelocity);
     }
@@ -73,8 +77,6 @@ public abstract class LifeformBase : MonoBehaviour {
     /// Add the gravity constant to .y component of velocity
     /// Do not accumulate gravity if colliding with anything vertically
     /// </summary>
-    protected void ApplyGravity() {
-        Velocity.y += Gravity * Time.deltaTime;
-    }
+    protected abstract void ApplyGravity();
     
 }

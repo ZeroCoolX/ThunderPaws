@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -92,7 +93,7 @@ public class Baddie : LifeformBase {
         }else if(Controller.Collisions.FromRight) {
             _previousInput = Vector2.left;
         }
-        Vector2 inputJump = new Vector2(0f, Random.Range(-1f, 1f));
+        Vector2 inputJump = new Vector2(0f, UnityEngine.Random.Range(-1f, 1f));
         if (Jump) {
             if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
                 Velocity.y = JumpVelocity;
@@ -127,5 +128,9 @@ public class Baddie : LifeformBase {
             _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
         }
         LifeCheck();
+    }
+
+    protected override void ApplyGravity() {
+        Velocity.y += Gravity * Time.deltaTime;
     }
 }
