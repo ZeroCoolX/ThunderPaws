@@ -106,7 +106,7 @@ public class Player : LifeformBase {
         }
 
         //Set all physics values
-        InitializePhysicsValues(6f, 4f, 0.4f, 0.2f, 0.1f);
+        InitializePhysicsValues(8f, 4f, 0.4f, 0.2f, 0.1f);
 
         //Set the PlayerStats singleton and initialize
         _stats = PlayerStats.Instance;
