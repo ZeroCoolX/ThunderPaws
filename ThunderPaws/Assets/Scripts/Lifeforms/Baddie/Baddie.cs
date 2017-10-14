@@ -29,6 +29,11 @@ public class Baddie : LifeformBase {
     private StatusIndicator _statusIndicator;
 
     /// <summary>
+    /// Animator reference for sprite animations
+    /// </summary>
+    private Animator Animator;
+
+    /// <summary>
     /// Amount to shake camera by
     /// </summary>
     public float ShakeAmount = 0.05f;
@@ -36,6 +41,7 @@ public class Baddie : LifeformBase {
     /// How long to shake camera for
     /// </summary>
     public float ShakeLength = 0.1f;
+
 
     /// <summary>
     ///  Stores the generated input until it changes allowing us to know which way we came from so go the opposite direction. 
@@ -54,7 +60,7 @@ public class Baddie : LifeformBase {
     /// <summary>
     /// Set by the AI controller if we get into the PERSONAL_SPACE zone, the AI will tell us which way to create space
     /// </summary>
-    public int CreateSpaceDir;
+    public bool TargetOnLeft;
 
     /// <summary>
     /// State of the object.
@@ -74,6 +80,12 @@ public class Baddie : LifeformBase {
         }
         _stats.Initialize();
 
+        Animator = GetComponent<Animator>();
+        if (Animator == null) {
+            Debug.LogError("No Animator on player found");
+            throw new MissingComponentException();
+        }
+
         //Validate Status indicator
         if (_statusIndicator != null) {
             _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
@@ -92,6 +104,7 @@ public class Baddie : LifeformBase {
         }
         CalculateVelocityOffState();
         ApplyGravity();
+        Animate();
         Controller.Move(Velocity * Time.deltaTime);
     }
 
@@ -99,14 +112,16 @@ public class Baddie : LifeformBase {
     /// Based on the state of the entity calculate what the movement should be
     /// </summary>
     private void CalculateVelocityOffState() {
-        if(State == MentalStateEnum.NEUTRAL) {
+        if (State == MentalStateEnum.NEUTRAL) {
             CalculateWanderVelocity();
-        }else if(State == MentalStateEnum.NOTICE) {
+        } else if (State == MentalStateEnum.NOTICE) {
             CalculateNoticeVelocity();
-        }else if(State == MentalStateEnum.ATTACK) {
-            ForceJumpContinuously();
+        } else if (State == MentalStateEnum.ATTACK) {
+            CalculateJumpContinuouslyVelocity();
+        }else if (State == MentalStateEnum.PURSUE_ATTACK) {
+            CalculatePursueAttackVelocity();
         }else if(State == MentalStateEnum.PERSONAL_SPACE) {
-            CreateSpace();
+            CalculateCreateSpaceVelocity();
         }
     }
 
@@ -170,7 +185,7 @@ public class Baddie : LifeformBase {
     /// <summary>
     /// Helper method at the moment to force a jump just used to add a little diversity in when attacking
     /// </summary>
-    private void ForceJumpContinuously() {
+    private void CalculateJumpContinuouslyVelocity() {
         Velocity.x = 0;
         Vector2 inputJump = new Vector2(0f, UnityEngine.Random.Range(-1f, 1f));
         if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
@@ -178,9 +193,25 @@ public class Baddie : LifeformBase {
         }
     }
 
-    private void CreateSpace() {
-        float targetVelocityX = MoveSpeed * CreateSpaceDir;
+    /// <summary>
+    /// Kind of a hack at the moment, but the opposite of creating space is advancing in the direction of the Target so just use the opposite of the 
+    /// </summary>
+    private void CalculatePursueAttackVelocity() {
+        float targetVelocityX = MoveSpeed * (TargetOnLeft ? -1 : 1);
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+    }
+
+    /// <summary>
+    /// Space is created by moving in the opposite direction from where we're facing
+    /// </summary>
+    private void CalculateCreateSpaceVelocity() {
+        float targetVelocityX = MoveSpeed * (TargetOnLeft ? 1 : -1);
+        Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+    }
+
+    private void Animate() {
+        //Multiply by input so animation plays only when input is supplied instead of all the time because its a moving platform
+        Animator.SetFloat("Speed", Mathf.Abs(Velocity.x));
     }
 
 }

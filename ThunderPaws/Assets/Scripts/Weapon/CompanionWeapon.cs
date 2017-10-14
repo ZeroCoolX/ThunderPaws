@@ -21,6 +21,7 @@ public class CompanionWeapon : AbstractWeapon {
 	
 	// Update is called once per frame
 	void Update () {
+        //TODO: Need to find the closest enemy or stop shooting if there is none
         if (Input.GetKeyDown(KeyCode.F)) {
             _shouldShoot = !_shouldShoot;
         }

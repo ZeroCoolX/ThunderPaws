@@ -55,7 +55,7 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
     /// <summary>
     /// If the target gets within this distance the object will retreat to a further safer distance
     /// </summary>
-    private float _personalSpaceThreshold = 3f;
+    private float _personalSpaceThreshold = 5f;
 
     // Use this for initialization
     void Start() {
@@ -67,7 +67,7 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
             Debug.LogError("Cannot find Graphics on baddie");
             throw new MissingReferenceException();
         }
-
+        //Need a reference to the weapon attached to the object so we can tell it when and what to attack
         var weaponTransform = ArmRotationAxis.FindChild("proto_machine_gun");
         if(weaponTransform != null) {
             _baddieWeapon = weaponTransform.GetComponent<BaddieWeapon>();
@@ -98,11 +98,10 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
         }
         if(Baddie.State == MentalStateEnum.NEUTRAL) {
             _baddieWeapon.ShouldShoot = false;
-        }            
-        if(Baddie.State == MentalStateEnum.NOTICE || Baddie.State == MentalStateEnum.ATTACK || Baddie.State == MentalStateEnum.PERSONAL_SPACE) {
+        }else {
             LockOnTarget();
         }
-        if(Baddie.State == MentalStateEnum.ATTACK) {
+        if(Baddie.State == MentalStateEnum.ATTACK || Baddie.State == MentalStateEnum.PURSUE_ATTACK) {
             _baddieWeapon.ShouldShoot = true;
         }
     }
@@ -116,14 +115,21 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
             if (Target != null) {
                 //Get the distance between them
                 float distanceToTarget = Mathf.Abs(transform.position.x - Target.transform.position.x);
+                Baddie.TargetOnLeft = IsFacingLeft();
                 if (distanceToTarget <= _personalSpaceThreshold) {
                     //Update the direction we need ot move to create space
-                    Baddie.CreateSpaceDir = IsFacingLeft() ? 1 : -1;
                     Baddie.State = MentalStateEnum.PERSONAL_SPACE;
                 } else if (distanceToTarget <= _attackThreshold) {
                     Baddie.State = MentalStateEnum.ATTACK;
-                } else if (distanceToTarget <= _noticeThreshold /*&& State != MentalState.ATTACK*/) {//TODO: add that back in later tonight
-                    Baddie.State = MentalStateEnum.NOTICE;
+                } else if (distanceToTarget <= _noticeThreshold) {
+                    //The target was within the Attack zone, but retreated
+                    //Follow the target as long as its within the NOTICE zone
+                    //The Target moves 2units faster than this object so they will make their escape, but at least follow them for a little while
+                    if(Baddie.State == MentalStateEnum.ATTACK || Baddie.State == MentalStateEnum.PURSUE_ATTACK) {
+                        Baddie.State = MentalStateEnum.PURSUE_ATTACK;
+                    } else {
+                        Baddie.State = MentalStateEnum.NOTICE;
+                    }
                 } else {
                     Baddie.State = MentalStateEnum.NEUTRAL;
                 }
