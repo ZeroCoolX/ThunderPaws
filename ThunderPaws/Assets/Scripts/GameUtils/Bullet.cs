@@ -114,6 +114,7 @@ public class Bullet : MonoBehaviour {
                 Debug.Log("We hit " + hitObject.name + " and did " + Damage + " damage");
                 Baddie baddie = hitObject.GetComponent<Baddie>();
                 if (baddie != null) {
+                    //Naturally someone would realize they're being attacked if they were shot so retaliate
                     if(baddie.State != MentalStateEnum.ATTACK) {
                         baddie.State = MentalStateEnum.ATTACK;
                     }

@@ -36,11 +36,13 @@ public class BaddieWeapon : AbstractWeapon {
     }
 
     private void Update() {
-        //If the target is within the killzone, shoot
-        if (ShouldShoot && Time.time > _timeToFire) {
-            //Update time to fire
-            _timeToFire = Time.time + 1 / FireRate;
-            Shoot();
+        if (AttackTarget != null) {
+            //If the target is within the killzone, shoot
+            if (ShouldShoot && Time.time > _timeToFire) {
+                //Update time to fire
+                _timeToFire = Time.time + 1 / FireRate;
+                Shoot();
+            }
         }
     }
 

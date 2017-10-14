@@ -18,22 +18,11 @@ public class CompanionWeapon : AbstractWeapon {
     void Start () {
         base.Start();
 	}
-	
-	// Update is called once per frame
-	void Update () {
-        //TODO: Need to find the closest enemy or stop shooting if there is none
-        if (Input.GetKeyDown(KeyCode.F)) {
-            _shouldShoot = !_shouldShoot;
-        }
-        if (_shouldShoot) {
-            Shoot();
-        }
-	}
 
     /// <summary>
     /// Fire a projectile
     /// </summary>
-    private void Shoot() {
+    public void Shoot() {
         //Store mouse position (B)
         Vector2 targetPosition = new Vector2(Target.position.x, Target.position.y);
         //Store bullet origin spawn popint (A)

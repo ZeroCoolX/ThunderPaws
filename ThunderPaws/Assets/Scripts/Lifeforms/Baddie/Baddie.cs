@@ -80,6 +80,8 @@ public class Baddie : LifeformBase {
         }
         _stats.Initialize();
 
+
+        //Get the animator
         Animator = GetComponent<Animator>();
         if (Animator == null) {
             Debug.LogError("No Animator on player found");
@@ -158,11 +160,13 @@ public class Baddie : LifeformBase {
     /// Given a hardcoded max distance to wander from any direction change or begin origin just move in that direction till the threshold is met
     /// </summary>
     private void CalculateWanderVelocity() {
+        //Indicates this is the initial wandering so choose an arbitrary direction  (right)
         if(_wanderStart == null) {
             _wanderStart = transform.position;
             _previousInput = Vector2.right;
         }
         var dist = Vector2.Distance(transform.position, _wanderStart);
+        //Oscilate back and forth betwen +- maxWanderDist
         if (dist >= _maxWanderdistance) {
             _wanderStart = transform.position;
             if(_previousInput == Vector2.right) {
@@ -179,6 +183,7 @@ public class Baddie : LifeformBase {
     /// Right now stop moving and track the target
     /// </summary>
     private void CalculateNoticeVelocity() {
+        //This happens if we're currently not pursuing the target
         Velocity.x = 0;
     } 
 
@@ -187,6 +192,7 @@ public class Baddie : LifeformBase {
     /// </summary>
     private void CalculateJumpContinuouslyVelocity() {
         Velocity.x = 0;
+        //Basic randomization
         Vector2 inputJump = new Vector2(0f, UnityEngine.Random.Range(-1f, 1f));
         if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
             Velocity.y = JumpVelocity;
@@ -194,7 +200,8 @@ public class Baddie : LifeformBase {
     }
 
     /// <summary>
-    /// Kind of a hack at the moment, but the opposite of creating space is advancing in the direction of the Target so just use the opposite of the 
+    /// Very basic "seek the target"
+    /// Move in the direction of the target to pursue
     /// </summary>
     private void CalculatePursueAttackVelocity() {
         float targetVelocityX = MoveSpeed * (TargetOnLeft ? -1 : 1);
@@ -209,6 +216,9 @@ public class Baddie : LifeformBase {
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
     }
 
+    /// <summary>
+    /// Animate the sprite
+    /// </summary>
     private void Animate() {
         //Multiply by input so animation plays only when input is supplied instead of all the time because its a moving platform
         Animator.SetFloat("Speed", Mathf.Abs(Velocity.x));

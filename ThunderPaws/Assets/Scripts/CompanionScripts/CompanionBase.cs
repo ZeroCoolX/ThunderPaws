@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class CompanionBase : MonoBehaviour {
     /// <summary>
+    /// Layermask indicating what to query for closest targets
+    /// </summary>
+    public LayerMask TargetLayerMask;
+
+    /// <summary>
     /// Just used as a reference for the Mathf.SmoothDamp function
     /// </summary>
     protected float VelocityYSmoothing;
@@ -38,12 +43,30 @@ public class CompanionBase : MonoBehaviour {
     /// how fast the companion moves within its floating existence
     /// </summary>
     public float MoveSpeed = 0.3f;
+    /// <summary>
+    /// Reference to the weapon on the companion so we can set who is the target and when to shoot
+    /// </summary>
+    private CompanionWeapon _companionWeapon;
+    /// <summary>
+    /// Max distance the companion searches for a target
+    /// </summary>
+    private float _maxTargetLocateRadius = 10f;
 
+    /// <summary>
+    /// Set from the CompanionFollow script to indicate the player isn't moving
+    /// </summary>
     public bool Idle = true;
 
     void Start () {
         Origin = transform.position;
         SetExistenceBounds();
+        var weaponTransform = transform.FindChild("Weapon");
+        if(weaponTransform != null) {
+            _companionWeapon = weaponTransform.GetComponent<CompanionWeapon>();
+        }
+        //Calculate the closest target once a second.
+        //We handle if we need to shoot or not, but regardless calculate it
+        InvokeRepeating("HandleShooting", 0f, 1f);
     }
 
     /// <summary>
@@ -76,6 +99,10 @@ public class CompanionBase : MonoBehaviour {
         //Only move if we should idle. Otherwise the player is moving and we need to catch up with them
         if (Idle) {
             Move();
+        }
+
+        if (_companionWeapon.Target != null) {
+            _companionWeapon.Shoot();
         }
     }
 
@@ -113,5 +140,29 @@ public class CompanionBase : MonoBehaviour {
     public struct ExistenceBounds {
         public float Top, Bottom;  
         public float Left, Right;
+    }
+
+    /// <summary>
+    /// Handles setting the companion weapons target
+    /// </summary>
+    private void HandleShooting() {
+        _companionWeapon.Target = GetClosestTarget();
+    }
+
+    /// <summary>
+    /// Given a set radius, draw a circle and collect any collider of the LayerMask supplied (that way we only query for desired objects instad of everything) that hits it
+    /// Traverse through the collection and store the closes or null if none found
+    /// </summary>
+    /// <returns></returns>
+    private Transform GetClosestTarget() {
+        var hitColliders = Physics2D.OverlapCircleAll(transform.position, _maxTargetLocateRadius, TargetLayerMask);
+        float currentClosest = Mathf.Infinity;
+        Transform closestTarget = null;
+        foreach(var hit in hitColliders) {
+            if(Vector2.Distance(transform.position, hit.transform.position) < currentClosest) {
+                closestTarget = hit.transform;
+            }
+        }
+        return closestTarget;
     }
 }
