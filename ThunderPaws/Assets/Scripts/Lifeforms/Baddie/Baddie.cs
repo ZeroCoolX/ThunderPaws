@@ -38,13 +38,28 @@ public class Baddie : LifeformBase {
     public float ShakeLength = 0.1f;
 
     /// <summary>
-    ///  USED FOR TESTING ONLY.
-    ///  Stores the generated input until it changes. 
+    ///  Stores the generated input until it changes allowing us to know which way we came from so go the opposite direction. 
     /// </summary>
     private Vector2 _previousInput;
+    /// <summary>
+    /// Farthest this object can wander.
+    /// Its updated randomly with a random value within a range
+    /// </summary>
     private float _maxWanderdistance = 3f;
+    /// <summary>
+    /// Everytime we start wandering in a direction we want to store where we started wandering from so we know when we've wandered far enough
+    /// </summary>
     private Vector2 _wanderStart;
 
+    /// <summary>
+    /// Set by the AI controller if we get into the PERSONAL_SPACE zone, the AI will tell us which way to create space
+    /// </summary>
+    public int CreateSpaceDir;
+
+    /// <summary>
+    /// State of the object.
+    /// Determines how we move.
+    /// </summary>
     public MentalStateEnum State;
 
     private void Start() {
@@ -90,6 +105,8 @@ public class Baddie : LifeformBase {
             CalculateNoticeVelocity();
         }else if(State == MentalStateEnum.ATTACK) {
             ForceJumpContinuously();
+        }else if(State == MentalStateEnum.PERSONAL_SPACE) {
+            CreateSpace();
         }
     }
 
@@ -122,13 +139,15 @@ public class Baddie : LifeformBase {
         Velocity.y += Gravity * Time.deltaTime;
     }
 
+    /// <summary>
+    /// Given a hardcoded max distance to wander from any direction change or begin origin just move in that direction till the threshold is met
+    /// </summary>
     private void CalculateWanderVelocity() {
         if(_wanderStart == null) {
             _wanderStart = transform.position;
             _previousInput = Vector2.right;
         }
         var dist = Vector2.Distance(transform.position, _wanderStart);
-        print(dist);
         if (dist >= _maxWanderdistance) {
             _wanderStart = transform.position;
             if(_previousInput == Vector2.right) {
@@ -149,7 +168,7 @@ public class Baddie : LifeformBase {
     } 
 
     /// <summary>
-    /// Helper method at the moment to force a jump
+    /// Helper method at the moment to force a jump just used to add a little diversity in when attacking
     /// </summary>
     private void ForceJumpContinuously() {
         Velocity.x = 0;
@@ -160,7 +179,8 @@ public class Baddie : LifeformBase {
     }
 
     private void CreateSpace() {
-
+        float targetVelocityX = MoveSpeed * CreateSpaceDir;
+        Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
     }
 
 }

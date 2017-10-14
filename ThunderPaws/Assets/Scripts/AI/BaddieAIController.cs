@@ -99,7 +99,7 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
         if(Baddie.State == MentalStateEnum.NEUTRAL) {
             _baddieWeapon.ShouldShoot = false;
         }            
-        if(Baddie.State == MentalStateEnum.NOTICE || Baddie.State == MentalStateEnum.ATTACK) {
+        if(Baddie.State == MentalStateEnum.NOTICE || Baddie.State == MentalStateEnum.ATTACK || Baddie.State == MentalStateEnum.PERSONAL_SPACE) {
             LockOnTarget();
         }
         if(Baddie.State == MentalStateEnum.ATTACK) {
@@ -117,7 +117,9 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
                 //Get the distance between them
                 float distanceToTarget = Mathf.Abs(transform.position.x - Target.transform.position.x);
                 if (distanceToTarget <= _personalSpaceThreshold) {
-                    Baddie.State = MentalStateEnum.NOTICE;
+                    //Update the direction we need ot move to create space
+                    Baddie.CreateSpaceDir = IsFacingLeft() ? 1 : -1;
+                    Baddie.State = MentalStateEnum.PERSONAL_SPACE;
                 } else if (distanceToTarget <= _attackThreshold) {
                     Baddie.State = MentalStateEnum.ATTACK;
                 } else if (distanceToTarget <= _noticeThreshold /*&& State != MentalState.ATTACK*/) {//TODO: add that back in later tonight
@@ -169,8 +171,7 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
     /// </summary>
     private void LockOnTarget() {
         //rotate left or right to face target
-        float faceDir = Target.position.x - transform.position.x;
-        BaddieGraphics.rotation = Quaternion.Euler(0f, faceDir <= 0 ? -180f : 360f, 0f);
+        BaddieGraphics.rotation = Quaternion.Euler(0f, IsFacingLeft() ? -180f : 360f, 0f);
 
         Vector3 diff = Target.position - ArmRotationAxis.position;
         //Normalize the vector x + y + z = 1
@@ -181,9 +182,9 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
         ArmRotationAxis.rotation = Quaternion.Euler(0f, 0f, rotZ);//degrees not radians
 
         //invert the arm only iff necessary
-        if (faceDir <= 0 && !_armIsLeft) {
+        if (IsFacingLeft() && !_armIsLeft) {
             InvertArm();
-        } else if (_armIsLeft && faceDir > 0) {
+        } else if (_armIsLeft && !IsFacingLeft()) {
             InvertArm();
         }
     }
@@ -200,5 +201,13 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
         Vector3 theScale = ArmRotationAxis.localScale;
         theScale.y *= -1;
         ArmRotationAxis.localScale = theScale;
+    }
+
+    /// <summary>
+    /// Helper function to tell us what direction we're facing relative to the target
+    /// result  less than or equal to 0 indicates facing LEFT
+    /// </summary>
+    private bool IsFacingLeft() {
+        return (Target.position.x - transform.position.x) <= 0;
     }
 }
