@@ -43,10 +43,20 @@ public class CompanionBase : MonoBehaviour {
     /// how fast the companion moves within its floating existence
     /// </summary>
     public float MoveSpeed = 0.3f;
+    
     /// <summary>
     /// Reference to the weapon on the companion so we can set who is the target and when to shoot
     /// </summary>
     private CompanionWeapon _companionWeapon;
+    /// <summary>
+    /// This is where the companion gets its bounds from because it moves relative to where the player is
+    /// </summary>
+    private Transform _companionOrigin;
+    /// <summary>
+    /// Who this object is a companion TOO
+    /// </summary>
+    public Transform Leader;
+
     /// <summary>
     /// Max distance the companion searches for a target
     /// </summary>
@@ -58,12 +68,20 @@ public class CompanionBase : MonoBehaviour {
     public bool Idle = true;
 
     void Start () {
-        Origin = transform.position;
-        SetExistenceBounds();
         var weaponTransform = transform.FindChild("Weapon");
         if(weaponTransform != null) {
             _companionWeapon = weaponTransform.GetComponent<CompanionWeapon>();
         }
+
+        _companionOrigin = Leader.FindChild("CompanionOrigin");
+        if (_companionOrigin == null) {
+            //We have a problem 
+            Debug.LogError("Could not find CompanionOrigin on: " + Leader.name);
+            throw new MissingReferenceException();
+        }
+
+        SetExistenceBounds();
+
         //Calculate the closest target once a second.
         //We handle if we need to shoot or not, but regardless calculate it
         InvokeRepeating("HandleShooting", 0f, 1f);
@@ -73,6 +91,7 @@ public class CompanionBase : MonoBehaviour {
     /// Calculate the 4 planes for which the companion can never exceed
     /// </summary>
     private void SetExistenceBounds() {
+        Origin = _companionOrigin.position;
         Bounds.Top = Origin.y + _floatReach;
         Bounds.Bottom = Origin.y - _floatReach;
         Bounds.Left = Origin.x - _floatReach;
@@ -91,6 +110,7 @@ public class CompanionBase : MonoBehaviour {
     }
 
     void Update () {
+        SetExistenceBounds();
         Debug.DrawRay(BottomLeft, Vector2.up * Vector2.Distance(BottomLeft, BottomRight), Color.green);
         Debug.DrawRay(TopLeft, Vector2.right * Vector2.Distance(TopLeft, TopRight), Color.green);
         Debug.DrawRay(TopRight, Vector2.down * Vector2.Distance(TopRight, BottomRight), Color.green);
@@ -124,14 +144,6 @@ public class CompanionBase : MonoBehaviour {
         }else if(transform.position.y >= Bounds.Top) {
             Gravity = -1f;
         }
-    }
-
-    /// <summary>
-    /// Add the gravity constant to .y component of velocity
-    /// Do not accumulate gravity if colliding with anything vertically
-    /// </summary>
-    private void ApplyGravity() {
-        Velocity.y += Gravity * Time.deltaTime;
     }
 
     /// <summary>

@@ -68,7 +68,7 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
             throw new MissingReferenceException();
         }
         //Need a reference to the weapon attached to the object so we can tell it when and what to attack
-        var weaponTransform = ArmRotationAxis.FindChild("proto_machine_gun");
+        var weaponTransform = ArmRotationAxis.FindChild("MachineGun_Badddie");
         if(weaponTransform != null) {
             _baddieWeapon = weaponTransform.GetComponent<BaddieWeapon>();
             _baddieWeapon.AttackTarget = Target;

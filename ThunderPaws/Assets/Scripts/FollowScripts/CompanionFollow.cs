@@ -33,6 +33,7 @@ public class CompanionFollow : FollowBase {
 
         //If we're not moving - idle
         if (xMoveDelta == 0) {
+            print("xMoveDelta = 0");
             Companion.Idle = true;
         } else {
             Companion.Idle = false;
