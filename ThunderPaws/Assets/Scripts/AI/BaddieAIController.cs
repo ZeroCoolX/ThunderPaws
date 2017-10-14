@@ -116,7 +116,6 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
             if (Target != null) {
                 //Get the distance between them
                 float distanceToTarget = Mathf.Abs(transform.position.x - Target.transform.position.x);
-                print("distance = " + distanceToTarget);
                 if (distanceToTarget <= _personalSpaceThreshold) {
                     Baddie.State = MentalStateEnum.NOTICE;
                 } else if (distanceToTarget <= _attackThreshold) {

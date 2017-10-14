@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(BaddieAI))]
+[RequireComponent(typeof(BaddieAIController))]
 public class Baddie : LifeformBase {
     /// <summary>
     /// Baddie Stats reference
@@ -39,14 +39,11 @@ public class Baddie : LifeformBase {
 
     /// <summary>
     ///  USED FOR TESTING ONLY.
-    ///  Indicates the type of movement to be acted. 
-    /// </summary>
-    public bool Jump = false;
-    /// <summary>
-    ///  USED FOR TESTING ONLY.
     ///  Stores the generated input until it changes. 
     /// </summary>
     private Vector2 _previousInput;
+    private float _maxWanderdistance = 3f;
+    private Vector2 _wanderStart;
 
     public MentalStateEnum State;
 
@@ -126,11 +123,19 @@ public class Baddie : LifeformBase {
     }
 
     private void CalculateWanderVelocity() {
-        //TODO: Movement should be based off AI Movement scripting
-        if (Controller.Collisions.FromLeft || Velocity == Vector3.zero) {
+        if(_wanderStart == null) {
+            _wanderStart = transform.position;
             _previousInput = Vector2.right;
-        } else if (Controller.Collisions.FromRight) {
-            _previousInput = Vector2.left;
+        }
+        var dist = Vector2.Distance(transform.position, _wanderStart);
+        print(dist);
+        if (dist >= _maxWanderdistance) {
+            _wanderStart = transform.position;
+            if(_previousInput == Vector2.right) {
+                _previousInput = Vector2.left;
+            }else {
+                _previousInput = Vector2.right;
+            }
         }
         float targetVelocityX = _previousInput.x * MoveSpeed;
          Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
@@ -152,6 +157,10 @@ public class Baddie : LifeformBase {
         if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
             Velocity.y = JumpVelocity;
         }
+    }
+
+    private void CreateSpace() {
+
     }
 
 }

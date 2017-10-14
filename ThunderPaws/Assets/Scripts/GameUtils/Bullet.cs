@@ -114,6 +114,9 @@ public class Bullet : MonoBehaviour {
                 Debug.Log("We hit " + hitObject.name + " and did " + Damage + " damage");
                 Baddie baddie = hitObject.GetComponent<Baddie>();
                 if (baddie != null) {
+                    if(baddie.State != MentalStateEnum.ATTACK) {
+                        baddie.State = MentalStateEnum.ATTACK;
+                    }
                     baddie.DamageHealth(Damage);
                 }
                 break;
