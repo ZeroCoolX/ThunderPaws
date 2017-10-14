@@ -15,10 +15,12 @@ public class BaddieWeapon : AbstractWeapon {
     /// </summary>
     public float ShotYMutatorHigh = 1.5f;
 
+    public Transform AttackTarget;
+
     /// <summary>
-    /// Baddie AI reference
+    /// Gets set by the BaddieAI
     /// </summary>
-    private BaddieAI _baddieAI;
+    public bool ShouldShoot = false;
     /// <summary>
     /// Layermask indicating what to hit
     /// </summary>
@@ -26,16 +28,16 @@ public class BaddieWeapon : AbstractWeapon {
 
     protected void Start() {
         base.Start();
-        _baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
-        if(_baddieAI == null) {
-            Debug.LogError("Weapon.cs: No BaddieAI script found on Baddie");
-            throw new MissingReferenceException();
-        }
+        //_baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
+        //if(_baddieAI == null) {
+        //    Debug.LogError("Weapon.cs: No BaddieAI script found on Baddie");
+        //    throw new MissingReferenceException();
+        //}
     }
 
     private void Update() {
         //If the target is within the killzone, shoot
-        if (_baddieAI.State == BaddieAI.BaddieState.ATTACK && Time.time > _timeToFire) {
+        if (ShouldShoot && Time.time > _timeToFire) {
             //Update time to fire
             _timeToFire = Time.time + 1 / FireRate;
             Shoot();
@@ -56,7 +58,7 @@ public class BaddieWeapon : AbstractWeapon {
     /// </summary>
     private void Shoot() {
         //Store mouse position (B)
-        Vector2 targetPosition = new Vector2(_baddieAI.Target.position.x, _baddieAI.Target.position.y /*+ GetShotMutator()*/);
+        Vector2 targetPosition = new Vector2(AttackTarget.position.x, AttackTarget.position.y /*+ GetShotMutator()*/);
         //Store bullet origin spawn popint (A)
         Vector2 firePointPosition = new Vector2(FirePoint.position.x, FirePoint.position.y);
         //Collect the hit data - distance and direction from A -> B

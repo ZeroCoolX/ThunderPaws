@@ -48,13 +48,15 @@ public class Baddie : LifeformBase {
     /// </summary>
     private Vector2 _previousInput;
 
+    public MentalStateEnum State;
+
     private void Start() {
         //Set all physics values
         InitializePhysicsValues(6f, 4f, 0.4f, 0.2f, 0.1f);
 
         //Confirm stats component and initialize
         _stats = transform.GetComponent<BaddieStats>();
-        if(_stats == null) {
+        if (_stats == null) {
             Debug.LogError("No BaddieStats found on Baddie");
             throw new MissingComponentException();
         }
@@ -65,7 +67,7 @@ public class Baddie : LifeformBase {
             _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
         }
         //Validate Death particles are set
-        if(DeathParticles == null) {
+        if (DeathParticles == null) {
             Debug.LogError("No death particles found");
             throw new UnassignedReferenceException();
         }
@@ -76,32 +78,21 @@ public class Baddie : LifeformBase {
         if (Controller.Collisions.FromBelow || Controller.Collisions.FromAbove) {
             Velocity.y = 0;
         }
-        CalculateVelocityOffInput();
+        CalculateVelocityOffState();
         ApplyGravity();
         Controller.Move(Velocity * Time.deltaTime);
     }
 
     /// <summary>
-    /// Contents are temporary for testing. AI movement script not written yet.
-    /// Change direction either vertical or horizontal an arbitrary amount and some interval
+    /// Based on the state of the entity calculate what the movement should be
     /// </summary>
-    private void CalculateVelocityOffInput() {
-
-        //TODO: Movement should be based off AI Movement scripting
-        if(Controller.Collisions.FromLeft || Velocity == Vector3.zero) {
-            _previousInput = Vector2.right;
-        }else if(Controller.Collisions.FromRight) {
-            _previousInput = Vector2.left;
-        }
-        Vector2 inputJump = new Vector2(0f, UnityEngine.Random.Range(-1f, 1f));
-        if (Jump) {
-            if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
-                Velocity.y = JumpVelocity;
-            }
-        } else {
-            float targetVelocityX = _previousInput.x * MoveSpeed;
-            print("target x = " + targetVelocityX);
-            Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+    private void CalculateVelocityOffState() {
+        if(State == MentalStateEnum.NEUTRAL) {
+            CalculateWanderVelocity();
+        }else if(State == MentalStateEnum.NOTICE) {
+            CalculateNoticeVelocity();
+        }else if(State == MentalStateEnum.ATTACK) {
+            ForceJumpContinuously();
         }
     }
 
@@ -116,7 +107,7 @@ public class Baddie : LifeformBase {
             //TODO: Add audio
         }
     }
-    
+
     /// <summary>
     /// Decrement health and check for life
     /// </summary>
@@ -124,7 +115,7 @@ public class Baddie : LifeformBase {
     public void DamageHealth(int dmg) {
         //Damage baddie and check vitals
         _stats.CurHealth -= dmg;
-        if(_statusIndicator != null) {
+        if (_statusIndicator != null) {
             _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
         }
         LifeCheck();
@@ -133,4 +124,34 @@ public class Baddie : LifeformBase {
     protected override void ApplyGravity() {
         Velocity.y += Gravity * Time.deltaTime;
     }
+
+    private void CalculateWanderVelocity() {
+        //TODO: Movement should be based off AI Movement scripting
+        if (Controller.Collisions.FromLeft || Velocity == Vector3.zero) {
+            _previousInput = Vector2.right;
+        } else if (Controller.Collisions.FromRight) {
+            _previousInput = Vector2.left;
+        }
+        float targetVelocityX = _previousInput.x * MoveSpeed;
+         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+    }
+
+    /// <summary>
+    /// Right now stop moving and track the target
+    /// </summary>
+    private void CalculateNoticeVelocity() {
+        Velocity.x = 0;
+    } 
+
+    /// <summary>
+    /// Helper method at the moment to force a jump
+    /// </summary>
+    private void ForceJumpContinuously() {
+        Velocity.x = 0;
+        Vector2 inputJump = new Vector2(0f, UnityEngine.Random.Range(-1f, 1f));
+        if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
+            Velocity.y = JumpVelocity;
+        }
+    }
+
 }

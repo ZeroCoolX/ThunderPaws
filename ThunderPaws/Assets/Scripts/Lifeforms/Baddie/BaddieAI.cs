@@ -28,7 +28,8 @@ public class BaddieAI : MonoBehaviour {
     public float TimeToJumpApex = 0.4f;//how long till they reach highest point
 
     //determines the actions taken
-    public enum BaddieState { NEUTRAL=0, WARNING=1, ATTACK=2};
+    public enum BaddieState { NEUTRAL=0, WARNING=1, ATTACK=2, PERSONAL_SPACE=3};
+
     private BaddieState _state;
     public BaddieState State { get { return _state; } }
 
@@ -136,9 +137,6 @@ public class BaddieAI : MonoBehaviour {
         Velocity.y += Gravity * Time.deltaTime;
     }
 
-    private void Explore() {
-        transform.Translate(Velocity * Time.deltaTime);
-    }
 
     //When the target no longer exists in game - I.E. died, stop updaing states and shooting 
     private void CoolOffBaddie() {
