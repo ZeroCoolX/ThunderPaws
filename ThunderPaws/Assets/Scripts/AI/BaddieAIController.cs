@@ -158,13 +158,14 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
     /// <returns></returns>
     IEnumerator SearchForPlayer() {
         //Search for the player
-        GameObject searchResult = GameObject.FindGameObjectWithTag("Player");
+        GameObject searchResult = GameObject.FindGameObjectWithTag(_targetTag);
         if (searchResult == null) {//search only twice a second until found
             yield return new WaitForSeconds(0.5f);
             StartCoroutine(SearchForPlayer());
         } else {
             //Found the player - set it as the target and stop searching and reinvoke the state updating
             Target = searchResult.transform;
+            _baddieWeapon.AttackTarget = Target;
             _searchingForPlayer = false;
             //twice a second look around for the target
             InvokeRepeating("UpdateState", 0f, 0.5f);

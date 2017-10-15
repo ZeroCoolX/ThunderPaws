@@ -28,11 +28,6 @@ public class BaddieWeapon : AbstractWeapon {
 
     protected void Start() {
         base.Start();
-        //_baddieAI = gameObject.transform.parent.transform.parent.GetComponent<BaddieAI>();
-        //if(_baddieAI == null) {
-        //    Debug.LogError("Weapon.cs: No BaddieAI script found on Baddie");
-        //    throw new MissingReferenceException();
-        //}
     }
 
     private void Update() {

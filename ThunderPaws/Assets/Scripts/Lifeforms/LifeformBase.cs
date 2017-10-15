@@ -78,5 +78,5 @@ public abstract class LifeformBase : MonoBehaviour {
     /// Do not accumulate gravity if colliding with anything vertically
     /// </summary>
     protected abstract void ApplyGravity();
-    
+
 }
