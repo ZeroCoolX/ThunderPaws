@@ -48,7 +48,7 @@ public class CompanionWeapon : AbstractWeapon {
             }
 
             //Actually instantiate the effect
-            GenerateEffect(hitPosition, hitNormal, WhatToHit);
+            GenerateEffect(hitPosition, hitNormal, WhatToHit, "PLAYERBULLET");
             TimeToSpawnEffect = Time.time + 1 / EffectSpawnRate;
         }
     }

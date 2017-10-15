@@ -23,6 +23,19 @@ public class Baddie : LifeformBase {
     public int HealthDropAmount = 10;
 
     /// <summary>
+    /// Layermask to indicate what object this needs to dodge
+    /// </summary>
+    public LayerMask DodgeLayerMask;
+    /// <summary>
+    /// Maximum distance object this needs to dodge can be away before we dodge
+    /// </summary>
+    private float _maxDodgeRadius = 5f;
+    /// <summary>
+    /// How often to check if we can dodge or not
+    /// </summary>
+    private float _timeToDodge;
+
+    /// <summary>
     /// Visual status indicator displaying health
     /// </summary>
     [SerializeField]
@@ -60,6 +73,19 @@ public class Baddie : LifeformBase {
     /// Must reset where we are wandering so the object doesn't get stuck in a corner forever
     /// </summary>
     private bool _recalculatingWander = false;
+
+    /// <summary>
+    /// Allows for attack strafing to be done at an interval instead of every frame so it looks more natural
+    /// </summary>
+    private float _timeToStrafe = 0f;
+    /// <summary>
+    /// The rate at which we should strafe
+    /// </summary>
+    public float StrafeRate;
+    /// <summary>
+    /// Need to keep a reference in case we're currently moving in a strafe direction we have to update the speed based off the last known strafe velocity
+    /// </summary>
+    private float _currentStrafeVelocity;
 
     /// <summary>
     /// Set by the AI controller if we get into the PERSONAL_SPACE zone, the AI will tell us which way to create space
@@ -126,7 +152,7 @@ public class Baddie : LifeformBase {
         } else if (State == MentalStateEnum.NOTICE) {
             CalculateNoticeVelocity();
         } else if (State == MentalStateEnum.ATTACK) {
-            CalculateJumpContinuouslyVelocity();
+            CalculateAttackVelocity();
         }else if (State == MentalStateEnum.PURSUE_ATTACK) {
             CalculatePursueAttackVelocity();
         }else if(State == MentalStateEnum.PERSONAL_SPACE) {
@@ -178,7 +204,6 @@ public class Baddie : LifeformBase {
         var dist = Vector2.Distance(transform.position, _wanderStart);
         //Check ledges before anything else
         if (Controller.Collisions.NearLedge) {
-            print("Near Ledge");
             _wanderStart = transform.position;
             if (_previousInput == Vector2.right) {
                 _previousInput = Vector2.left;
@@ -236,13 +261,53 @@ public class Baddie : LifeformBase {
     /// <summary>
     /// Helper method at the moment to force a jump just used to add a little diversity in when attacking
     /// </summary>
-    private void CalculateJumpContinuouslyVelocity() {
+    private void CalculateJumpVelocity() {
         Velocity.x = 0;
-        //Basic randomization
-        Vector2 inputJump = new Vector2(0f, UnityEngine.Random.Range(-1f, 1f));
-        if (inputJump.y > 0 && Controller.Collisions.FromBelow) {
+        if (Controller.Collisions.FromBelow) {
             Velocity.y = JumpVelocity;
         }
+    }
+
+    /// <summary>
+    /// Calculate how the object should move during a fight.
+    /// Strafeing and jumping at random intervals.
+    /// Random bullet checks cause a jump
+    /// </summary>
+    public void CalculateAttackVelocity() {
+        //Calculate random strafing
+        //Based off random value - change to go right or left 
+        //Only strafe on an interval instead of every frame. Makes it look more realistic
+        if (Time.time > _timeToStrafe) {
+            var rand = UnityEngine.Random.Range(-10, 10f) * Time.deltaTime;
+
+            Vector2 strafeVelocity = Vector2.right * Mathf.Sign(rand);
+            _timeToStrafe = Time.time + 3 / StrafeRate;
+
+            _currentStrafeVelocity = strafeVelocity.x * MoveSpeed;
+            Velocity.x = Mathf.SmoothDamp(Velocity.x, _currentStrafeVelocity, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+        }else {
+            Velocity.x = Mathf.SmoothDamp(Velocity.x, _currentStrafeVelocity, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+        }
+
+        //Check if any nearby bullets
+        //chance to jump out of the way
+        if (BulletWithinRange() && Time.time > _timeToDodge) {
+            //If can jump out of the way via time do it
+            _timeToDodge = Time.time + 5;
+            CalculateJumpVelocity();
+        }
+    }
+
+    private bool BulletWithinRange() {
+        var hitColliders = Physics2D.OverlapCircleAll(transform.position, _maxDodgeRadius, DodgeLayerMask);
+        float currentClosest = Mathf.Infinity;
+        Transform closestTarget = null;
+        foreach (var hit in hitColliders) {
+            if (Vector2.Distance(transform.position, hit.transform.position) < currentClosest) {
+                closestTarget = hit.transform;
+            }
+        }
+        return closestTarget != null;
     }
 
     /// <summary>

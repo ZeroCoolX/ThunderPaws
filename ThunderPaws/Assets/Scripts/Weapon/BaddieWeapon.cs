@@ -79,7 +79,7 @@ public class BaddieWeapon : AbstractWeapon {
             }
 
             //Actually instantiate the effect
-            GenerateEffect(hitPosition, hitNormal, WhatToHit);
+            GenerateEffect(hitPosition, hitNormal, WhatToHit, "BADDIEBULLET");
             TimeToSpawnEffect = Time.time + 1 / EffectSpawnRate;
         }
     }

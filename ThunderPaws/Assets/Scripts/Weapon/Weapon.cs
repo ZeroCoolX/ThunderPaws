@@ -74,7 +74,7 @@ public class Weapon : AbstractWeapon {
             }
 
             //Actually instantiate the effect
-            GenerateEffect(hitPosition, hitNormal, WhatToHit);
+            GenerateEffect(hitPosition, hitNormal, WhatToHit, "PLAYERBULLET");
             GenerateCamShake();
             TimeToSpawnEffect = Time.time + 1 / EffectSpawnRate;
         }

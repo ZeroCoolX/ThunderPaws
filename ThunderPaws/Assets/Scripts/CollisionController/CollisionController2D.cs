@@ -181,6 +181,9 @@ public class CollisionController2D : MonoBehaviour {
         RayOrigins.TopRight = new Vector2(bounds.max.x, bounds.max.y);
     }
 
+    /// <summary>
+    /// Determine the spacing needed to evenly spread rays 
+    /// </summary>
     private void CalculateRaySpacing() {
         Bounds bounds = BoxCollider.bounds;
         //shrink in the bounds by -2 on all sides
