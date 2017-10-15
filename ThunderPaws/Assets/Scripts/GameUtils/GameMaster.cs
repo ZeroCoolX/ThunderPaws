@@ -52,6 +52,11 @@ public class GameMaster : MonoBehaviour {
     public GameObject GameOverUI;
 
     /// <summary>
+    /// Allows us to spawn the UI at the end of the game for a win
+    /// </summary>
+    public GameObject LevelCompleteUI;
+
+    /// <summary>
     /// Remaining lives counter must persist through player deaths
     /// </summary>
     public int RemainingLives { get { return _remainingLives; } set { _remainingLives = value; } }
@@ -181,9 +186,24 @@ public class GameMaster : MonoBehaviour {
 
     //Fill the PickupableSprites map
     private void FillMappings() {
-        PickupableSpriteMap.Sprites.Add(PickupableEnum.HEALTH, Sprites[0]);
-        PickupableSpriteMap.Sprites.Add(PickupableEnum.MACHINE_GUN, Sprites[1]);
-        CompanionMap.Companions.Add(CompanionEnum.BASE, Companions[0]);
+        if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.HEALTH)) {
+            PickupableSpriteMap.Sprites.Add(PickupableEnum.HEALTH, Sprites[0]);
+        }
+        if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.HEALTH)) {
+            PickupableSpriteMap.Sprites.Add(PickupableEnum.MACHINE_GUN, Sprites[1]);
+        }
+        if (!CompanionMap.Companions.ContainsKey(CompanionEnum.BASE)) {
+            CompanionMap.Companions.Add(CompanionEnum.BASE, Companions[0]);
+        }
+    }
+
+    /// <summary>
+    /// Player has made it to the end of the level
+    /// </summary>
+    public void LevelComplete(Player player) {
+        LevelCompleteUI.SetActive(true);
+        //kill the player
+        Instance.KillDashNine(player.gameObject, false);
     }
 
 }

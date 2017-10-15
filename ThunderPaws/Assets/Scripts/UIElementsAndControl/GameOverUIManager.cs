@@ -15,6 +15,7 @@ public class GameOverUIManager : MonoBehaviour {
         SceneManager.LoadScene(MenuScene);
     }
 
+
     public void Quit() {
         print("We quit the game from game over");
         Application.Quit();
