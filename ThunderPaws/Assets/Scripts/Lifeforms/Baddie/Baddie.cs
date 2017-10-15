@@ -51,11 +51,16 @@ public class Baddie : LifeformBase {
     /// Farthest this object can wander.
     /// Its updated randomly with a random value within a range
     /// </summary>
-    private float _maxWanderdistance = 3f;
+    private float _maxWanderDistance = 10f;
     /// <summary>
     /// Everytime we start wandering in a direction we want to store where we started wandering from so we know when we've wandered far enough
     /// </summary>
     private Vector2 _wanderStart;
+    /// <summary>
+    /// Used when we collided with something before our wander threshold
+    /// Must reset where we are wandering so the object doesn't get stuck in a corner forever
+    /// </summary>
+    private bool _recalculatingWander = false;
 
     /// <summary>
     /// Set by the AI controller if we get into the PERSONAL_SPACE zone, the AI will tell us which way to create space
@@ -172,17 +177,45 @@ public class Baddie : LifeformBase {
             _previousInput = Vector2.right;
         }
         var dist = Vector2.Distance(transform.position, _wanderStart);
-        //Oscilate back and forth betwen +- maxWanderDist
-        if (dist >= _maxWanderdistance) {
-            _wanderStart = transform.position;
-            if(_previousInput == Vector2.right) {
-                _previousInput = Vector2.left;
-            }else {
-                _previousInput = Vector2.right;
+        //Do not check for maxdistance threshold if we're recalculating
+        if (!_recalculatingWander) {
+            //Oscilate back and forth betwen +- maxWanderDist
+            if (dist >= _maxWanderDistance || (Controller.Collisions.FromLeft || Controller.Collisions.FromRight)) {
+                print("collision or outside max thresh");
+                _wanderStart = transform.position;
+                if (_previousInput == Vector2.right) {
+                    print("was going right");
+                    //this indicates that we collided with something before we wandered far enough 
+                    if (Controller.Collisions.FromRight) {
+                        print("recalculating");
+                        RecalculateWanderStart(true);
+                    }
+                    _previousInput = Vector2.left;
+                } else {
+                    //this indicates that we collided with something before we wandered far enough 
+                    if (Controller.Collisions.FromLeft) {
+                        RecalculateWanderStart(false);
+                    }
+                    _previousInput = Vector2.right;
+                }
+            }
+        }else {
+            //We recalculated the wanderStart to be twice as far away, so we need to get back below the maxWanderThreshold
+            //Once that happens we are done recalculating and the normal wander calculations can begin again
+            if(dist < _maxWanderDistance) {
+                _recalculatingWander = false;
             }
         }
         float targetVelocityX = _previousInput.x * MoveSpeed;
          Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+    }
+
+    private void RecalculateWanderStart(bool wanderLeft) {
+        _recalculatingWander = true;
+        //Double (+-) where we started wandering from in the opposite direction
+        print("_wanderStart = " + _wanderStart);
+        _wanderStart.x += (_maxWanderDistance * (wanderLeft ? -1 : 1));
+        print("Now _wanderStart = " + _wanderStart);
     }
 
     /// <summary>
