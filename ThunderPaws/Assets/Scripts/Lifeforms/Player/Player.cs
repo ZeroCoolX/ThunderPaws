@@ -329,6 +329,19 @@ public class Player : LifeformBase {
             case PickupableEnum.MACHINE_GUN:
                 _ownedWeapons.Add(WeaponEnum.MACHINE_GUN);
                 break;
+            case PickupableEnum.COMPANION:
+                CreateCompanion();
+                break;
         }
+    }
+
+    /// <summary>
+    /// Create a Companion and set all the necessary properties
+    /// </summary>
+    private void CreateCompanion() {
+        var companionOrigin = transform.FindChild("CompanionOrigin").transform;
+        var companion = Instantiate(CompanionMap.Companions[CompanionEnum.BASE], companionOrigin.position, transform.rotation);
+        companion.GetComponent<CompanionBase>().Leader = transform;
+        companion.GetComponent<CompanionFollow>().Target = companionOrigin;
     }
 }

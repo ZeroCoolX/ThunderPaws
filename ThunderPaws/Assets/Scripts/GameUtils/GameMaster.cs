@@ -10,6 +10,11 @@ public class GameMaster : MonoBehaviour {
     public Sprite[] Sprites = new Sprite[2];
 
     /// <summary>
+    /// List of all possible companions so we can map them to their correct enums for instantiation
+    /// </summary>
+    public Transform[] Companions = new Transform[1];
+
+    /// <summary>
     /// Singleton for other scripts to access
     /// </summary>
     public static GameMaster Instance;
@@ -81,7 +86,7 @@ public class GameMaster : MonoBehaviour {
         if(Instance == null) {
             Instance = GameObject.FindGameObjectWithTag("GM").GetComponent<GameMaster>();
         }
-        FillPickupableSprites();
+        FillMappings();
     }
 
     private void Start() {
@@ -175,9 +180,10 @@ public class GameMaster : MonoBehaviour {
     }
 
     //Fill the PickupableSprites map
-    private void FillPickupableSprites() {
-        PickupableSprites.Sprites.Add(PickupableEnum.HEALTH, Sprites[0]);
-        PickupableSprites.Sprites.Add(PickupableEnum.MACHINE_GUN, Sprites[1]);
+    private void FillMappings() {
+        PickupableSpriteMap.Sprites.Add(PickupableEnum.HEALTH, Sprites[0]);
+        PickupableSpriteMap.Sprites.Add(PickupableEnum.MACHINE_GUN, Sprites[1]);
+        CompanionMap.Companions.Add(CompanionEnum.BASE, Companions[0]);
     }
 
 }
