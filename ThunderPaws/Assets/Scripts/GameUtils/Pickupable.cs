@@ -18,7 +18,6 @@ public class Pickupable : MonoBehaviour {
     private void Update() {
         //Raycast to check if we could potentially the target
         RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, Target.position - transform.position);
-        print(possibleHit.collider);
         if (possibleHit.collider != null) {
             //TODO: change the distance of the ray we draw to be relative to the pickup size
             RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Target.position - transform.position, 0.75f, WhatToHit);
@@ -33,7 +32,6 @@ public class Pickupable : MonoBehaviour {
         //Apply pickup to whoever we hit
         switch (hitObject.gameObject.tag) {
             case "Player":
-                Debug.Log("We hit " + hitObject.name + " and will apply health");
                 Player player = hitObject.GetComponent<Player>();
                 if (player != null) {
                     player.ApplyPickup(_pickup);
