@@ -29,8 +29,17 @@ public class GameMaster : MonoBehaviour {
     [SerializeField]
     private int _maxLives = 3;
 
+    /// <summary>
+    /// Determines when we have ended the game
+    /// </summary>
     [SerializeField]
     private static int _remainingLives;
+
+    /// <summary>
+    /// Allows us to spawn the UI at the end of the game
+    /// </summary>
+    public GameObject GameOverUI;
+
     /// <summary>
     /// Remaining lives counter must persist through player deaths
     /// </summary>
@@ -127,7 +136,7 @@ public class GameMaster : MonoBehaviour {
         Instance.CamShake.Shake(player.ShakeAmount, player.ShakeLength);
 
         //kill the player
-        Instance.KillDashNine(player.gameObject, true);
+        Instance.KillDashNine(player.gameObject, RemainingLives > 0);
     }
 
     /// <summary>
@@ -139,6 +148,8 @@ public class GameMaster : MonoBehaviour {
         Destroy(obj);
         if (respawn) { 
             Instance.StartCoroutine(Instance.RespawnPlayer());
+        }else {
+            GameOverUI.SetActive(true);
         }
     }
 

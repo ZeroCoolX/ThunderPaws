@@ -133,6 +133,9 @@ public class Baddie : LifeformBase {
     private void LifeCheck() {
         //Kill the baddie
         if (_stats.CurHealth <= 0) {
+            //Drop Health
+            var pickupable = Instantiate(HealthDrop, transform.position, transform.rotation) as Transform;
+            pickupable.GetComponent<Pickupable>().TargetName = "Player";
             GameMaster.KillBaddie(this);
         } else {
             //TODO: Add audio
