@@ -99,6 +99,7 @@ public class Baddie : LifeformBase {
         }
         //Set the sprite renderer we need for our health drop because it is not set at compile time
         HealthDrop.GetComponent<SpriteRenderer>().sprite = PickupableSprites.Sprites[PickupableEnum.HEALTH];
+        HealthDrop.GetComponent<Pickupable>().Pickup = PickupableEnum.HEALTH;
     }
 
     void Update() {

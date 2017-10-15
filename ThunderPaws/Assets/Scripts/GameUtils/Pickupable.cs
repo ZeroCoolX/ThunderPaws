@@ -6,7 +6,7 @@ public class Pickupable : MonoBehaviour {
     /// <summary>
     /// Pickup type
     /// </summary>
-    private PickupableEnum _pickup = PickupableEnum.HEALTH;
+    public PickupableEnum Pickup;
     /// <summary>
     /// This is the object we want to be able to pick us up
     /// </summary>
@@ -50,7 +50,7 @@ public class Pickupable : MonoBehaviour {
             case "Player":
                 Player player = hitObject.GetComponent<Player>();
                 if (player != null) {
-                    player.ApplyPickup(_pickup);
+                    player.ApplyPickup(Pickup);
                 }
                 break;
         }

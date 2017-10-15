@@ -177,7 +177,7 @@ public class GameMaster : MonoBehaviour {
     //Fill the PickupableSprites map
     private void FillPickupableSprites() {
         PickupableSprites.Sprites.Add(PickupableEnum.HEALTH, Sprites[0]);
-        PickupableSprites.Sprites.Add(PickupableEnum.WEAPON, Sprites[1]);
+        PickupableSprites.Sprites.Add(PickupableEnum.MACHINE_GUN, Sprites[1]);
     }
 
 }

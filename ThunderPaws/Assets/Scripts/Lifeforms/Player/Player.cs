@@ -326,6 +326,9 @@ public class Player : LifeformBase {
             case PickupableEnum.CURRENCY:
                 throw new NotImplementedException();
                 break;
+            case PickupableEnum.MACHINE_GUN:
+                _ownedWeapons.Add(WeaponEnum.MACHINE_GUN);
+                break;
         }
     }
 }
