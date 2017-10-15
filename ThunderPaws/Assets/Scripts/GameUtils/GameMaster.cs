@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class GameMaster : MonoBehaviour {
     /// <summary>
+    /// List of possible pikcupable sprite references so we can fill a map with corresponding enums so whenever something picks up one, they know whaat to do with it
+    /// Also this allows us to programatically set the SpriteRenderer of any generic Pickupable without having to create specific prefabs for each
+    /// </summary>
+    public Sprite[] Sprites = new Sprite[2];
+
+    /// <summary>
     /// Singleton for other scripts to access
     /// </summary>
     public static GameMaster Instance;
@@ -16,11 +22,11 @@ public class GameMaster : MonoBehaviour {
 
     [Header("Weapon Data")]
     [SerializeField]
-    private int _weaponChoice = 0;
+    private WeaponEnum _weaponChoice = WeaponEnum.PISTOL;
     /// <summary>
     /// Weapon choice 1, 2,...etc default 1 (pistol)
     /// </summary>
-    public int WeaponChoice { get { return _weaponChoice; } set { _weaponChoice = value; } }
+    public WeaponEnum WeaponChoice { get { return _weaponChoice; } set { _weaponChoice = value; } }
 
     /// <summary>
     /// Max lives per game
@@ -49,7 +55,7 @@ public class GameMaster : MonoBehaviour {
     /// Delegate for switching weapons
     /// </summary>
     /// <param name="choice"></param>
-    public delegate void WeaponSwitchCallback(int choice);
+    public delegate void WeaponSwitchCallback(WeaponEnum choice);
     public WeaponSwitchCallback OnWeaponSwitch;
 
     //TODO: currency
@@ -75,6 +81,7 @@ public class GameMaster : MonoBehaviour {
         if(Instance == null) {
             Instance = GameObject.FindGameObjectWithTag("GM").GetComponent<GameMaster>();
         }
+        FillPickupableSprites();
     }
 
     private void Start() {
@@ -91,11 +98,11 @@ public class GameMaster : MonoBehaviour {
         //If the user is switching weapons, change the selection, then update the delegate so the player knows to switch
         if (Input.GetKeyDown(KeyCode.Alpha1)) {
             //Switch to pistol
-            WeaponChoice = 1;
+            WeaponChoice = WeaponEnum.PISTOL;
             OnWeaponSwitch.Invoke(WeaponChoice);
         }else if (Input.GetKeyDown(KeyCode.Alpha2)) {
             //Switch to machine gun
-            WeaponChoice = 2;
+            WeaponChoice = WeaponEnum.MACHINE_GUN;
             OnWeaponSwitch.Invoke(WeaponChoice);
         }
     }
@@ -149,7 +156,9 @@ public class GameMaster : MonoBehaviour {
         if (respawn) { 
             Instance.StartCoroutine(Instance.RespawnPlayer());
         }else {
-            GameOverUI.SetActive(true);
+            if (RemainingLives <= 0) {
+                GameOverUI.SetActive(true);
+            }
         }
     }
 
@@ -163,6 +172,12 @@ public class GameMaster : MonoBehaviour {
         Instantiate(Player, SpawnPoint.position, SpawnPoint.rotation);
         GameObject clone = Instantiate(SpawnPrefab, SpawnPoint.position, SpawnPoint.rotation) as GameObject;
         Destroy(clone, 3f);
+    }
+
+    //Fill the PickupableSprites map
+    private void FillPickupableSprites() {
+        PickupableSprites.Sprites.Add(PickupableEnum.HEALTH, Sprites[0]);
+        PickupableSprites.Sprites.Add(PickupableEnum.WEAPON, Sprites[1]);
     }
 
 }

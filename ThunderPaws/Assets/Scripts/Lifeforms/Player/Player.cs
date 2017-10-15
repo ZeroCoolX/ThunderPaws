@@ -29,6 +29,8 @@ public class Player : LifeformBase {
     /// </summary>
     public float ShakeLength = 0.1f;
 
+    private List<WeaponEnum> _ownedWeapons;
+
     /// <summary>
     /// Weapons indicated by ints 1, 2...etc
     /// </summary>
@@ -126,6 +128,9 @@ public class Player : LifeformBase {
             throw new UnassignedReferenceException();
         }
 
+        //Add default starting weapon to the collection of owned weapons
+        _ownedWeapons = new List<WeaponEnum>();
+        _ownedWeapons.Add(WeaponEnum.PISTOL);
         //Set default weapon (Pistol) and Add weapon switching logic to GameMaster delegate
         SelectWeapon(GameMaster.Instance.WeaponChoice);
         //Add the weapon switch method onto the weaponSwitch delegate
@@ -171,21 +176,23 @@ public class Player : LifeformBase {
     /// Toggle active status of weapon objects on the player based off choice
     /// </summary>
     /// <param name="choice"></param>
-    private void SelectWeapon(int choice) {
-        //TODO: only allow weapon switch if they have the weapon
-        if(_machineGun != null && _pistol != null) {
-            _machineGun.SetActive(false);
-            _pistol.SetActive(false);
-            switch (choice) {
-                case 1:
-                    _pistol.SetActive(true);
-                    break;
-                case 2:
-                    _machineGun.SetActive(true);
-                    break;
-                default:
-                    _pistol.SetActive(true);
-                    break;
+    private void SelectWeapon(WeaponEnum choice) {
+        //Only switch to the desired weapon if the player owns it
+        if (_ownedWeapons.Contains(choice)) {
+            if (_machineGun != null && _pistol != null) {
+                _machineGun.SetActive(false);
+                _pistol.SetActive(false);
+                switch (choice) {
+                    case WeaponEnum.PISTOL:
+                        _pistol.SetActive(true);
+                        break;
+                    case WeaponEnum.MACHINE_GUN:
+                        _machineGun.SetActive(true);
+                        break;
+                    default:
+                        _pistol.SetActive(true);
+                        break;
+                }
             }
         }
     }

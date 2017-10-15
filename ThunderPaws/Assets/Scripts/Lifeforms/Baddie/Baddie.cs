@@ -97,6 +97,8 @@ public class Baddie : LifeformBase {
             Debug.LogError("No death particles found");
             throw new UnassignedReferenceException();
         }
+        //Set the sprite renderer we need for our health drop because it is not set at compile time
+        HealthDrop.GetComponent<SpriteRenderer>().sprite = PickupableSprites.Sprites[PickupableEnum.HEALTH];
     }
 
     void Update() {
