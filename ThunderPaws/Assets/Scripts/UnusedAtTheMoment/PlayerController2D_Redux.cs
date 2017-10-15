@@ -22,6 +22,10 @@ public class PlayerController2D_Redux : LifeformBase {
         Controller.Move(Velocity * Time.deltaTime);
     }
 
+    public override void ApplyPickup(PickupableEnum pickupType) {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Get the input from either the user - or NPC generated 
     /// </summary>

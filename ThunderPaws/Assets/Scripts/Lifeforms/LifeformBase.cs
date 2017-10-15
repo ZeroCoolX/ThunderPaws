@@ -46,6 +46,8 @@ public abstract class LifeformBase : MonoBehaviour {
     /// </summary>
     protected CollisionController2D Controller;
 
+    protected List<PickupableEnum> Pickups;
+
     /// <summary>
     /// Set all constant physics values
     /// Calculate dynamic values like Gravity and JumpVelocity
@@ -78,5 +80,18 @@ public abstract class LifeformBase : MonoBehaviour {
     /// Do not accumulate gravity if colliding with anything vertically
     /// </summary>
     protected abstract void ApplyGravity();
+
+    /// <summary>
+    /// Apply whatever pickup was found
+    /// </summary>
+    public abstract void ApplyPickup(PickupableEnum pickupType);
+
+    /// <summary>
+    /// Add whatever pickup we collided with to the list
+    /// </summary>
+    /// <param name="pickup"></param>
+    protected void AddPickupable(PickupableEnum pickup) {
+        Pickups.Add(pickup);
+    }
 
 }

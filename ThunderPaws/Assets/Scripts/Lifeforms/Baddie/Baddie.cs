@@ -224,4 +224,9 @@ public class Baddie : LifeformBase {
         Animator.SetFloat("Speed", Mathf.Abs(Velocity.x));
     }
 
+    public override void ApplyPickup(PickupableEnum pickupType) {
+        throw new NotImplementedException();
+    }
+
+
 }

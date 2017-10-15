@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets._2D;
@@ -236,13 +237,13 @@ public class Player : LifeformBase {
             //Face right
             Flip();
             if (!_rightSideUp) {
-                invertArm();
+                InvertArm();
             }
         } else if ((rotZ > 90f) && _facingRight) {
             //Face left
             Flip();
             if (_rightSideUp) {
-                invertArm();
+                InvertArm();
             }
         }
         //Multiply by input so animation plays only when input is supplied instead of all the time because its a moving platform
@@ -263,6 +264,9 @@ public class Player : LifeformBase {
         FlipCompanionAnchorDelayed();
     }
 
+    /// <summary>
+    /// Ensures the companion anchor is always behind the player
+    /// </summary>
     private void FlipCompanionAnchorDelayed() {
         Vector3 newPos = CompanionAnchor.position;
         float newX = newPos.x + (2 * _companionFlipOffset * (_facingRight ? -1f : 1f));
@@ -273,7 +277,7 @@ public class Player : LifeformBase {
     /// <summary>
     /// Invert the arm graphics so its always right side up no matter what angle its facing
     /// </summary>
-    private void invertArm() {
+    private void InvertArm() {
         //Switch the way the arm is labeled as facing
         _rightSideUp = !_rightSideUp;
 
@@ -295,8 +299,26 @@ public class Player : LifeformBase {
         PlayerArm.transform.localPosition = theScale;
     }
 
+    /// <summary>
+    /// Overriden method to apply gravity ourselves
+    /// </summary>
     protected override void ApplyGravity() {
         Velocity.y += Gravity * Time.deltaTime;
     }
 
+    /// <summary>
+    /// Based off the pickup type: do the expected action
+    /// </summary>
+    /// <param name="pickupType"></param>
+    public override void ApplyPickup(PickupableEnum pickupType) {
+        switch (pickupType) {
+            case PickupableEnum.HEALTH:
+                _stats.CurHealth = _stats.MaxHealth;
+                _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
+                break;
+            case PickupableEnum.CURRENCY:
+                throw new NotImplementedException();
+                break;
+        }
+    }
 }
