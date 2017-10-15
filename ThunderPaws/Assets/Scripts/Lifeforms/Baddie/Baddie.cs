@@ -42,7 +42,6 @@ public class Baddie : LifeformBase {
     /// </summary>
     public float ShakeLength = 0.1f;
 
-
     /// <summary>
     ///  Stores the generated input until it changes allowing us to know which way we came from so go the opposite direction. 
     /// </summary>
@@ -177,17 +176,25 @@ public class Baddie : LifeformBase {
             _previousInput = Vector2.right;
         }
         var dist = Vector2.Distance(transform.position, _wanderStart);
+        //Check ledges before anything else
+        if (Controller.Collisions.NearLedge) {
+            print("Near Ledge");
+            _wanderStart = transform.position;
+            if (_previousInput == Vector2.right) {
+                _previousInput = Vector2.left;
+            } else {
+                _previousInput = Vector2.right;
+            }
+        }
+
         //Do not check for maxdistance threshold if we're recalculating
         if (!_recalculatingWander) {
             //Oscilate back and forth betwen +- maxWanderDist
             if (dist >= _maxWanderDistance || (Controller.Collisions.FromLeft || Controller.Collisions.FromRight)) {
-                print("collision or outside max thresh");
                 _wanderStart = transform.position;
                 if (_previousInput == Vector2.right) {
-                    print("was going right");
                     //this indicates that we collided with something before we wandered far enough 
                     if (Controller.Collisions.FromRight) {
-                        print("recalculating");
                         RecalculateWanderStart(true);
                     }
                     _previousInput = Vector2.left;

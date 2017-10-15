@@ -63,12 +63,15 @@ public class CollisionController2D : MonoBehaviour {
     public void Move(Vector3 velocity) {
         UpdateRaycasyOrigins();
         Collisions.Reset();
-
         if(velocity.x != 0) {
             CalculateHorizontalCollisions(ref velocity);
         }
         if (velocity.y != 0) {
             CalculateVerticalCollisions(ref velocity);
+        }
+        //Only calculaate near ledge if we're standing on something. 
+        if (velocity.x != 0 && Collisions.FromBelow) {
+            CalculateNearLedge(ref velocity);
         }
         //Move the object
         transform.Translate(velocity);
@@ -82,7 +85,7 @@ public class CollisionController2D : MonoBehaviour {
     /// </summary>
     /// <param name="velocity"></param>
     public void CalculateHorizontalCollisions(ref Vector3 velocity) {
-        //get direction of y velocity + up  - down
+        //get direction of x velocity + up  - down
         float directionX = Mathf.Sign(velocity.x);
         //length of ray
         float rayLength = Mathf.Abs(velocity.x) + SkinWidth;
@@ -143,6 +146,28 @@ public class CollisionController2D : MonoBehaviour {
     }
 
     /// <summary>
+    /// Specific vertical collision checking used for AI determining if they're near a ledge
+    /// </summary>
+    /// <param name="velocity"></param>
+    public void CalculateNearLedge(ref Vector3 velocity) {
+        //get direction of y velocity + up  - down
+        float directionY = Mathf.Sign(velocity.y);
+        //length of ray
+        float rayLength = Mathf.Abs(velocity.y) + SkinWidth;
+
+        //check in which direction we're moving
+        Vector2 rayOrigin = (Mathf.Sign(velocity.x) == -1) ? RayOrigins.BottomLeft : RayOrigins.BottomRight;
+        //moves it along the x values - top and bottom faces
+        rayOrigin += Vector2.right * velocity.x;//We either need the bottom left or bottom right
+        Debug.DrawRay(rayOrigin, Vector2.down * rayLength, Color.green);
+        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, rayLength, CollisionMask);
+        if (!hit) {
+            //We are standing on a ledge where the bottom left or bottom right is hanging over the edge
+            Collisions.NearLedge = true;
+        }
+    }
+
+    /// <summary>
     /// get the bounds of the box collider, shrink by skinwidth, and update raycast origin coordinates
     /// </summary>
     public void UpdateRaycasyOrigins() {
@@ -185,10 +210,12 @@ public class CollisionController2D : MonoBehaviour {
     public struct CollisionInfo {
         public bool FromAbove, FromBelow;
         public bool FromLeft, FromRight;
+        public bool NearLedge;
 
         public void Reset() {
             FromAbove = FromBelow = false;
             FromLeft = FromRight = false;
+            NearLedge = false;
         }
     }
 	
