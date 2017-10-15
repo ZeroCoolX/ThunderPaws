@@ -54,7 +54,7 @@ public class GameMaster : MonoBehaviour {
     /// <summary>
     /// Remaining lives counter must persist through player deaths
     /// </summary>
-    public static int RemainingLives { get { return _remainingLives; } set { _remainingLives = value; } }
+    public int RemainingLives { get { return _remainingLives; } set { _remainingLives = value; } }
 
     /// <summary>
     /// Delegate for switching weapons
@@ -138,7 +138,7 @@ public class GameMaster : MonoBehaviour {
     /// <param name="player"></param>
     public static void KillPlayer(Player player) {
         //decrement lives
-        --RemainingLives;
+        --_remainingLives;
 
         //Generate death particles
         Transform clone = Instantiate(player.DeathParticles, player.transform.position, Quaternion.identity) as Transform;
@@ -148,7 +148,7 @@ public class GameMaster : MonoBehaviour {
         Instance.CamShake.Shake(player.ShakeAmount, player.ShakeLength);
 
         //kill the player
-        Instance.KillDashNine(player.gameObject, RemainingLives > 0);
+        Instance.KillDashNine(player.gameObject, _remainingLives > 0);
     }
 
     /// <summary>
