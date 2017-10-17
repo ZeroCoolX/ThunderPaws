@@ -8,9 +8,13 @@ public abstract class LifeformBase : MonoBehaviour {
     /// </summary>
     protected float MoveSpeed;
     /// <summary>
-    /// How high can object jump
+    /// Min height object can jump
     /// </summary>
-    protected float JumpHeight;
+    protected float MinJumpHeight;
+    /// <summary>
+    /// Max height object can jump
+    /// </summary>
+    protected float MaxJumpHeight;
     /// <summary>
     /// How long it takes to reach JumpHeight
     /// </summary>
@@ -29,9 +33,13 @@ public abstract class LifeformBase : MonoBehaviour {
     /// </summary>
     protected float Gravity;
     /// <summary>
-    /// Calculated based off gravity and jump constraints
+    /// Calculated based off gravity and jump constraints and player input (max)
     /// </summary>
-    protected float JumpVelocity;
+    protected float MaxJumpVelocity;
+    /// <summary>
+    /// Calculated based off gravity and jump constraints and player input (min)
+    /// </summary>
+    protected float MinJumpVelocity;
     /// <summary>
     /// Object movement
     /// </summary>
@@ -57,9 +65,10 @@ public abstract class LifeformBase : MonoBehaviour {
     /// <param name="timeToJumpApex"></param>
     /// <param name="accelerationTimeAirborne"></param>
     /// <param name="accelerationTimeGrounded"></param>
-    protected void InitializePhysicsValues(float moveSpeed, float jumpHeight, float timeToJumpApex, float accelerationTimeAirborne, float accelerationTimeGrounded, float gravity = 0) {
+    protected void InitializePhysicsValues(float moveSpeed, float maxJumpHeight, float minJumpHeight, float timeToJumpApex, float accelerationTimeAirborne, float accelerationTimeGrounded, float gravity = 0) {
         MoveSpeed = moveSpeed;
-        JumpHeight = jumpHeight;
+        MinJumpHeight = minJumpHeight;
+        MaxJumpHeight = maxJumpHeight;
         TimeToJumpApex = timeToJumpApex;
         AccelerationTimeAirborne = accelerationTimeAirborne;
         AccelerationTimeGrounded = accelerationTimeGrounded;
@@ -67,12 +76,13 @@ public abstract class LifeformBase : MonoBehaviour {
         Controller = GetComponent<CollisionController2D>();
         //Calculate gravity and jump velocity
         if (gravity == 0) {
-            Gravity = -(2 * JumpHeight) / Mathf.Pow(TimeToJumpApex, 2);
+            Gravity = -(2 * MaxJumpHeight) / Mathf.Pow(TimeToJumpApex, 2);
         }else {
             Gravity = gravity;
         }
-        JumpVelocity = Mathf.Abs(Gravity) * TimeToJumpApex;
-        print("Gravity: " + Gravity + "\n Jump Velocity: " + JumpVelocity);
+        MaxJumpVelocity = Mathf.Abs(Gravity) * TimeToJumpApex;
+        MinJumpVelocity = (maxJumpHeight == minJumpHeight ? MaxJumpVelocity : Mathf.Sqrt(2 * Mathf.Abs(Gravity) * minJumpHeight));
+        print("Gravity: " + Gravity + "\n Jump Velocity: " + MaxJumpVelocity);
     }
 
     /// <summary>

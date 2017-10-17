@@ -13,15 +13,15 @@ public class PlayerInput : MonoBehaviour {
 	void Start () {
         Player = GetComponent<Player>();
 	}
-	
+	/// <summary>
+    /// Get the player input and store it on the Player object
+    /// </summary>
 	void Update () {
         Vector2 directionalInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Player.SetDirectionalInput(directionalInput);
-        //if (Input.GetKeyDown(KeyCode.Space)) {
-        //    player.OnJumpInputDown();
-        //}
-        //if (Input.GetKeyUp(KeyCode.Space)) {
-        //    player.OnJumpInputUp();
-        //}
+        //Used to apply variable jump height
+        if (Input.GetKeyUp(KeyCode.Space)) {
+            Player.OnJumpInputUp();
+        }
     }
 }

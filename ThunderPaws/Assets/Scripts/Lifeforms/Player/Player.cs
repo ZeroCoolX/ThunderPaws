@@ -109,7 +109,7 @@ public class Player : LifeformBase {
         }
 
         //Set all physics values
-        InitializePhysicsValues(8f, 4f, 0.4f, 0.2f, 0.1f);
+        InitializePhysicsValues(8f, 4f, 1f, 0.4f, 0.2f, 0.1f);
 
         //Set the PlayerStats singleton and initialize
         _stats = PlayerStats.Instance;
@@ -152,10 +152,17 @@ public class Player : LifeformBase {
         CalculatePlayerFacing();
     }
 
+    /// <summary>
+    /// Tells the companion to flip origin or not
+    /// </summary>
     private void CalculateCompanionFlipOffset() {
         _companionFlipOffset = Vector3.Distance(CompanionAnchor.position, transform.position);
     }
 
+    /// <summary>
+    /// Store the player input 
+    /// </summary>
+    /// <param name="input"></param>
     public void SetDirectionalInput(Vector2 input) {
         DirectionalInput = input;
     }
@@ -166,7 +173,7 @@ public class Player : LifeformBase {
     private void CalculateVelocityOffInput() {
         //check if user - or NPC - is trying to jump and is standing on the ground
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && Controller.Collisions.FromBelow) {
-            Velocity.y = JumpVelocity;
+            Velocity.y = MaxJumpVelocity;
         }
         float targetVelocityX = DirectionalInput.x * MoveSpeed;
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
@@ -343,5 +350,14 @@ public class Player : LifeformBase {
         var companion = Instantiate(CompanionMap.Companions[CompanionEnum.BASE], companionOrigin.position, transform.rotation);
         companion.GetComponent<CompanionBase>().Leader = transform;
         companion.GetComponent<CompanionFollow>().Target = companionOrigin;
+    }
+
+    /// <summary>
+    /// Helper method that handles variable jump height
+    /// </summary>
+    public void OnJumpInputUp() {
+        if (Velocity.y > MinJumpVelocity) {
+            Velocity.y = MinJumpVelocity;
+        }
     }
 }

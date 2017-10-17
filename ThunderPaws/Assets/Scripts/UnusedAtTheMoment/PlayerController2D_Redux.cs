@@ -9,7 +9,7 @@ public class PlayerController2D_Redux : LifeformBase {
     /// Initialize base lifeform class: MoveSpeed, JumpHeight, TimeToJumpApex, AccelerationTimeAirborne, AccelerationTimeGrounded
     /// </summary>
 	void Start () {
-        InitializePhysicsValues(6f, 4f, 0.4f, 0.2f, 0.1f);
+        InitializePhysicsValues(6f, 4f, 4f, 0.4f, 0.2f, 0.1f);
     }
 
     void Update() {
@@ -34,7 +34,7 @@ public class PlayerController2D_Redux : LifeformBase {
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         //check if user - or NPC - is trying to jump and is standing on the ground
         if((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && Controller.Collisions.FromBelow) {
-            Velocity.y = JumpVelocity;
+            Velocity.y = MaxJumpVelocity;
         }
         float targetVelocityX = input.x * MoveSpeed;
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);

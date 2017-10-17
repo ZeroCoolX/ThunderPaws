@@ -100,7 +100,7 @@ public class Baddie : LifeformBase {
 
     private void Start() {
         //Set all physics values
-        InitializePhysicsValues(6f, 4f, 0.4f, 0.2f, 0.1f);
+        InitializePhysicsValues(6f, 4f, 4f, 0.4f, 0.2f, 0.1f);
 
         //Confirm stats component and initialize
         _stats = transform.GetComponent<BaddieStats>();
@@ -264,7 +264,7 @@ public class Baddie : LifeformBase {
     private void CalculateJumpVelocity() {
         Velocity.x = 0;
         if (Controller.Collisions.FromBelow) {
-            Velocity.y = JumpVelocity;
+            Velocity.y = MaxJumpVelocity;
         }
     }
 
