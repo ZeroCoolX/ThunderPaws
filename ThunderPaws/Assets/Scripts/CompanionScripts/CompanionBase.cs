@@ -110,19 +110,21 @@ public class CompanionBase : MonoBehaviour {
     }
 
     void Update () {
-        SetExistenceBounds();
-        Debug.DrawRay(BottomLeft, Vector2.up * Vector2.Distance(BottomLeft, BottomRight), Color.green);
-        Debug.DrawRay(TopLeft, Vector2.right * Vector2.Distance(TopLeft, TopRight), Color.green);
-        Debug.DrawRay(TopRight, Vector2.down * Vector2.Distance(TopRight, BottomRight), Color.green);
-        Debug.DrawRay(BottomRight, Vector2.left * Vector2.Distance(BottomRight, BottomLeft), Color.green);
-        VerticalBoundsCheck();
-        //Only move if we should idle. Otherwise the player is moving and we need to catch up with them
-        if (Idle) {
-            Move();
-        }
+        if (_companionOrigin != null) {
+            SetExistenceBounds();
+            Debug.DrawRay(BottomLeft, Vector2.up * Vector2.Distance(BottomLeft, BottomRight), Color.green);
+            Debug.DrawRay(TopLeft, Vector2.right * Vector2.Distance(TopLeft, TopRight), Color.green);
+            Debug.DrawRay(TopRight, Vector2.down * Vector2.Distance(TopRight, BottomRight), Color.green);
+            Debug.DrawRay(BottomRight, Vector2.left * Vector2.Distance(BottomRight, BottomLeft), Color.green);
+            VerticalBoundsCheck();
+            //Only move if we should idle. Otherwise the player is moving and we need to catch up with them
+            if (Idle) {
+                Move();
+            }
 
-        if (_companionWeapon.Target != null) {
-            _companionWeapon.Shoot();
+            if (_companionWeapon.Target != null) {
+                _companionWeapon.Shoot();
+            }
         }
     }
 
