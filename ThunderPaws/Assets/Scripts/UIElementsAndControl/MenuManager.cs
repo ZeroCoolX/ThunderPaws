@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour {
 
-    public string sceneToLoadOnPlay = "CollisionPlayground";
+    public string sceneToLoadOnPlay = "Level1";
 
     public void StartGame() {
         SceneManager.LoadScene(sceneToLoadOnPlay);

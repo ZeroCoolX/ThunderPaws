@@ -18,6 +18,11 @@ public abstract class AbstractWeapon : MonoBehaviour {
     public int Damage = 10;
 
     /// <summary>
+    /// How fast the bullet travels
+    /// </summary>
+    public float BulletSpeed;
+
+    /// <summary>
     /// Bullet graphics
     /// </summary>
     [Header("Abstract: Effects")]
@@ -58,12 +63,14 @@ public abstract class AbstractWeapon : MonoBehaviour {
     /// <param name="whatToHit"></param>
     public virtual void GenerateEffect(Vector3 shotPos, Vector3 shotNormal, LayerMask whatToHit, string layer) {
         //Fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
-        Transform trail = Instantiate(BulletTrailPrefab, FirePoint.position, FirePoint.rotation) as Transform;
+        Transform bulletInstance = Instantiate(BulletTrailPrefab, FirePoint.position, FirePoint.rotation) as Transform;
         //Parent the bullet to who shot it so we know what to hit (parents LayerMask whatToHit)
-        Bullet bullet = trail.GetComponent<Bullet>();
+        Bullet bullet = bulletInstance.GetComponent<Bullet>();
         //Set layermask of parent (either player or baddie)
         bullet.SetLayerMask(whatToHit);
         bullet.gameObject.layer = LayerMask.NameToLayer(layer);
+        bullet.MoveSpeed = BulletSpeed;
+        print(bullet.MoveSpeed);
         //Fire at the point clicked
         bullet.Fire(shotPos, shotNormal);
 

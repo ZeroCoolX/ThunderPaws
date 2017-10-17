@@ -6,6 +6,8 @@ public class Bullet : MonoBehaviour {
 
     /// <summary>
     /// How fast the bullet travels
+    /// Set from the weapon calling its creation
+    /// 30f is the defaualt speed if one is not set
     /// </summary>
     public float MoveSpeed = 30f;
 
@@ -13,6 +15,11 @@ public class Bullet : MonoBehaviour {
     /// How much damage this bullet does
     /// </summary>
     public int Damage = 5;
+
+    /// <summary>
+    /// Max time in seconds this object can stay alive
+    /// </summary>
+    private float _maxLifetime = 1.5;
 
     /// <summary>
     /// Precalculated values necessary for determining how to spray the particles, where we THINK the collision will take place
@@ -39,6 +46,7 @@ public class Bullet : MonoBehaviour {
             Debug.LogError("No HitPrefab was found on bullet");
             throw new UnassignedReferenceException();
         }
+        Invoke("MaxLifeExceededDestroy", _maxLifetime);
     }
 
     void Update () {
@@ -75,6 +83,14 @@ public class Bullet : MonoBehaviour {
         }
         //Move as a constant speed
         transform.Translate(_targetDirection.normalized * MoveSpeed * Time.deltaTime, Space.World);
+    }
+
+    /// <summary>
+    /// Bullets have a killswitch where they get destroyed no maatter what after 3 seconds.
+    /// This helps cleanup any "stuck" bullets for whatever reason - I've seen a bullet here or there and not sure why at the moment
+    /// </summary>
+    private void MaxLifeExceededDestroy() {
+        Destroy(gameObject);
     }
 
     /// <summary>
