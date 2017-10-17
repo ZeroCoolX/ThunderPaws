@@ -43,7 +43,7 @@ public abstract class LifeformBase : MonoBehaviour {
     /// <summary>
     /// Object movement
     /// </summary>
-    protected Vector3 Velocity;
+    public Vector3 Velocity;
     /// <summary>
     /// Just used as a reference for the Mathf.SmoothDamp function
     /// </summary>

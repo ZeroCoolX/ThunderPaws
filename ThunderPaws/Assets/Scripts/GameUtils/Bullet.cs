@@ -49,7 +49,11 @@ public class Bullet : MonoBehaviour {
             RaycastHit2D distCheck = Physics2D.Raycast(transform.position, _targetPos - transform.position, 0.2f, WhatToHit);
             if (distCheck.collider != null) {
                 HitTarget(transform.position, distCheck.collider);
-                return;
+                //We don't want to stop the bullet trajectory if we're hitting the trigger.
+                //If we're on the ground - which is the only time the rocket jump boost can be applied, the bullet should hit the ground instead of the trigger
+                if (distCheck.collider.gameObject.tag != "ROCKETJUMPTRIGGER") {
+                    return;
+                }
             }
 
             //Last check is simplest check
@@ -61,7 +65,11 @@ public class Bullet : MonoBehaviour {
                 distCheck = Physics2D.Raycast(transform.position, _targetPos - transform.position, 0.2f, WhatToHit);
                 if (distCheck.collider != null) {
                     HitTarget(transform.position, distCheck.collider);
-                    return;
+                    //We don't want to stop the bullet trajectory if we're hitting the trigger.
+                    //If we're on the ground - which is the only time the rocket jump boost can be applied, the bullet should hit the ground instead of the trigger
+                    if (distCheck.collider.gameObject.tag != "ROCKETJUMPTRIGGER") {
+                        return;
+                    }
                 }
             }
         }
@@ -101,13 +109,21 @@ public class Bullet : MonoBehaviour {
     /// <param name="hitPos"></param>
     /// <param name="hitObject"></param>
     public void HitTarget(Vector3 hitPos, Collider2D hitObject) {
-        //Damage whoever we hit
+        //Damage whoever we hit - or rocket jump
+        Player player;
         switch (hitObject.gameObject.tag) {
             case "Player":
                 Debug.Log("We hit " + hitObject.name + " and did " + Damage + " damage");
-                Player player = hitObject.GetComponent<Player>();
+                player = hitObject.GetComponent<Player>();
                 if(player != null) {
                     player.DamageHealth(Damage);
+                }
+                break;
+            case "ROCKETJUMPTRIGGER":
+                Debug.Log("We hit " + hitObject.name + " and rocket jumped!");
+                player = hitObject.GetComponentInParent<Player>();
+                if (player != null) {
+                    player.AllowRocketJump();
                 }
                 break;
             case "BADDIE":
@@ -122,11 +138,12 @@ public class Bullet : MonoBehaviour {
                 }
                 break;
         }
-
-        //Mask it so when we hit something the particles shoot OUT from it.
-        Transform hitParticles = Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
-        //Destroy hit particles
-        Destroy(hitParticles.gameObject, 1f);
-        Destroy(gameObject);
+        if (!hitObject.gameObject.tag.Equals("ROCKETJUMPTRIGGER")) {
+            //Mask it so when we hit something the particles shoot OUT from it.
+            Transform hitParticles = Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
+            //Destroy hit particles
+            Destroy(hitParticles.gameObject, 1f);
+            Destroy(gameObject);
+        }
     }
 }

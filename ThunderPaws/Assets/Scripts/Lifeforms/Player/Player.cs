@@ -78,6 +78,14 @@ public class Player : LifeformBase {
     /// Input supplied from user input
     /// </summary>
     public Vector2 DirectionalInput;
+    /// <summary>
+    /// Indicates the player shot down and hit the trigger and if they jump within 0.25seconds of hitting the trigger they will receive a massive jump boost
+    /// </summary>
+    private bool _rocketJumpInitiated = false;
+    /// <summary>
+    /// Adds to jump velocity
+    /// </summary>
+    private float _rocketJumpBoost = 5f;
 
     /// <summary>
     /// Setup Player object.
@@ -173,7 +181,8 @@ public class Player : LifeformBase {
     private void CalculateVelocityOffInput() {
         //check if user - or NPC - is trying to jump and is standing on the ground
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && Controller.Collisions.FromBelow) {
-            Velocity.y = MaxJumpVelocity;
+            //If they're trying to rocket jump...LET THEM
+            Velocity.y = MaxJumpVelocity + (_rocketJumpInitiated ? _rocketJumpBoost : 0f);
         }
         float targetVelocityX = DirectionalInput.x * MoveSpeed;
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
@@ -357,7 +366,16 @@ public class Player : LifeformBase {
     /// </summary>
     public void OnJumpInputUp() {
         if (Velocity.y > MinJumpVelocity) {
-            Velocity.y = MinJumpVelocity;
+            Velocity.y = MinJumpVelocity + (_rocketJumpInitiated ? _rocketJumpBoost : 0f);
         }
+    }
+
+    public void AllowRocketJump() {
+        _rocketJumpInitiated = true;
+        Invoke("ResetRocketJump", 0.25f);
+    }
+
+    public void ResetRocketJump() {
+        _rocketJumpInitiated = false;
     }
 }
