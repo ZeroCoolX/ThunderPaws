@@ -148,7 +148,7 @@ public class Player : LifeformBase {
         }
         CalculateVelocityOffInput();
         ApplyGravity();
-        Controller.Move(Velocity * Time.deltaTime);
+        Controller.Move(Velocity * Time.deltaTime, DirectionalInput);
         CalculatePlayerFacing();
     }
 

@@ -5,52 +5,27 @@ using UnityEngine;
 /// <summary>
 /// Physics controller that can be given to any object with a box collider and it can make use of collision detection
 /// </summary>
-[RequireComponent(typeof(BoxCollider2D))]
-public class CollisionController2D : MonoBehaviour {
+public class CollisionController2D : RaycastController {
     /// <summary>
     /// LayerMask to determine which objects we want THIS to collide with
     /// </summary>
     public LayerMask CollisionMask;
-
     /// <summary>
-    /// how much to shrink the box collider bounds by
+    /// Struct containing collision info
     /// </summary>
-    const float SkinWidth = 0.015f;
-
-    /// <summary>
-    /// number of rays used horizontally on each side
-    /// </summary>
-    public int HorizontalRayCount = 4;
-    /// <summary>
-    /// number of rays used vertically on each side
-    /// </summary>
-    public int VerticalRayCount = 4;
-    /// <summary>
-    /// space in between each horizontal ray
-    /// </summary>
-    private float HorizontalRaySpacing;
-    /// <summary>
-    /// space in between each vertical ray
-    /// </summary>
-    private float VerticalRaySpacing;
-
-    //box collider on the object
-    BoxCollider2D BoxCollider;
-    //struct containing 4 corner raycast data
-    RaycastOrigins RayOrigins;
-    //struct containing collision info
     public CollisionInfo Collisions;
 
+    /// <summary>
+    /// Player input
+    /// </summary>
+    public Vector2 PlayerInput;
 
-	void Start () {
-        //box collider on the object
-        BoxCollider = GetComponent<BoxCollider2D>();
-        //Only calculate on changing of the values
-        CalculateRaySpacing();
+    public override void Start() {
+        base.Start();
     }
 
-    void Update() {
-
+    public void Move(Vector3 velocity) {
+        Move(velocity, Vector2.zero);
     }
 
     /// <summary>
@@ -58,9 +33,11 @@ public class CollisionController2D : MonoBehaviour {
     /// Reset collisions.
     /// Calculate both vertical and horizontal collisions.
     /// Move object
+    /// Optional input parameter is for one way platforms. Need a reference to the player input to know if we should drop through platforms
     /// </summary>
     /// <param name="velocity"></param>
-    public void Move(Vector3 velocity) {
+    public void Move(Vector3 velocity, Vector2 input) {
+        PlayerInput = input;
         UpdateRaycasyOrigins();
         Collisions.Reset();
         if(velocity.x != 0) {
@@ -99,6 +76,10 @@ public class CollisionController2D : MonoBehaviour {
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength, Color.red);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, CollisionMask);
             if (hit) {
+                //Check if we're within a platform - I.E. jumping up or falling down through one way platforms
+                if (hit.distance == 0) {
+                    continue;
+                }
                 //distance from us to the object <= velocity.x so set it to that
                 velocity.x = (hit.distance - SkinWidth) * directionX;
                 //change ray length once we hit the first thing because we shouldn't cast rays FURTHER than this min one
@@ -133,6 +114,23 @@ public class CollisionController2D : MonoBehaviour {
             Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength, Color.red);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, CollisionMask);
             if (hit) {
+                //Check for one way platforms - or completely through ones
+                if (hit.collider.tag == "OBSTACLE-THROUGH") {
+                    if (directionY == 1 || hit.distance == 0) {
+                        continue;
+                    }
+                }
+                ///Do not collide if we're currently falling through the platform
+                if (Collisions.FallingThroughPlatform) {
+                    continue;
+                }
+                //Give the player half a second chance to fall through the platform
+                if (PlayerInput.y == -1 && hit.collider.tag == "OBSTACLE-THROUGH") {
+                    Collisions.FallingThroughPlatform = true;
+                    Invoke("ResetFallingThroughPlatform", 0.25f);
+                    continue;
+                }
+
                 //distance from us to the object <= velocity.y so set it to that
                 velocity.y = (hit.distance - SkinWidth) * directionY;
                 //change ray length once we hit the first thing because we shouldn't cast rays FURTHER than this min one
@@ -143,6 +141,13 @@ public class CollisionController2D : MonoBehaviour {
                 Collisions.FromAbove = (directionY == 1);
             }
         }
+    }
+
+    /// <summary>
+    /// After a set interval reset the collisions
+    /// </summary>
+    void ResetFallingThroughPlatform() {
+        Collisions.FallingThroughPlatform = false;
     }
 
     /// <summary>
@@ -167,45 +172,6 @@ public class CollisionController2D : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// get the bounds of the box collider, shrink by skinwidth, and update raycast origin coordinates
-    /// </summary>
-    public void UpdateRaycasyOrigins() {
-        Bounds bounds = BoxCollider.bounds;
-        //shrink in the bounds by -2 on all sides
-        bounds.Expand(SkinWidth * -2);
-
-        RayOrigins.BottomLeft = new Vector2(bounds.min.x, bounds.min.y);
-        RayOrigins.BottomRight = new Vector2(bounds.max.x, bounds.min.y);
-        RayOrigins.TopLeft = new Vector2(bounds.min.x, bounds.max.y);
-        RayOrigins.TopRight = new Vector2(bounds.max.x, bounds.max.y);
-    }
-
-    /// <summary>
-    /// Determine the spacing needed to evenly spread rays 
-    /// </summary>
-    private void CalculateRaySpacing() {
-        Bounds bounds = BoxCollider.bounds;
-        //shrink in the bounds by -2 on all sides
-        bounds.Expand(SkinWidth * -2);
-
-        //Ensure we have at least 2 rays firing in the horizontal and vertical directions
-        HorizontalRayCount = Mathf.Clamp(HorizontalRayCount, 2, int.MaxValue);
-        VerticalRayCount = Mathf.Clamp(VerticalRayCount, 2, int.MaxValue);
-
-        //(size of face rays come out of) / (1 less than count desired)
-        HorizontalRaySpacing = bounds.size.y / (HorizontalRayCount - 1);
-        VerticalRaySpacing = bounds.size.x / (VerticalRayCount - 1);
-
-    }
-
-    /// <summary>
-    /// Stores information about our raycasts at the 4 corners of our box collider
-    /// </summary>
-    struct RaycastOrigins {
-        public Vector2 TopLeft, TopRight;
-        public Vector2 BottomLeft, BottomRight;
-    }
 
     /// <summary>
     /// Stores information about the collision - where it occurred..etc
@@ -214,11 +180,13 @@ public class CollisionController2D : MonoBehaviour {
         public bool FromAbove, FromBelow;
         public bool FromLeft, FromRight;
         public bool NearLedge;
+        public bool FallingThroughPlatform;
 
         public void Reset() {
             FromAbove = FromBelow = false;
             FromLeft = FromRight = false;
             NearLedge = false;
+            FallingThroughPlatform = false;
         }
     }
 	

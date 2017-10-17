@@ -14,7 +14,6 @@ public class PlayerInput : MonoBehaviour {
         Player = GetComponent<Player>();
 	}
 	
-	
 	void Update () {
         Vector2 directionalInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Player.SetDirectionalInput(directionalInput);

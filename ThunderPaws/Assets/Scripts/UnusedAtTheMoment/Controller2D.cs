@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
-public class Controller2D : RaycastController {
+public class Controller2D : RaycastController_old {
     public CollisionInfo collisions;
     Vector2 playerInput;
 
