@@ -208,6 +208,18 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
         Vector3 theScale = ArmRotationAxis.localScale;
         theScale.y *= -1;
         ArmRotationAxis.localScale = theScale;
+
+        //Also deal with the arm rotation axis offset since the graphics, arm, and colliders are all seperate.
+        //This 0.3 offset is because the pivot point on the graphics is dead center, but the arm is at the shoulder for a natural arm movement.
+        //The offset allows the arm to stay in place when left or right. Otherwise it jutts out when facing left because its flipping scale based on the rotational axis
+        if (theScale.y < 0f) {
+            theScale = ArmRotationAxis.transform.localPosition;
+            theScale.x += 0.3f;
+        } else {
+            theScale = ArmRotationAxis.transform.localPosition;
+            theScale.x -= 0.3f;
+        }
+        ArmRotationAxis.transform.localPosition = theScale;
     }
 
     /// <summary>

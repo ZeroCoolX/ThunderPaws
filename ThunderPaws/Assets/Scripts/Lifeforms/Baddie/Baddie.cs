@@ -47,6 +47,22 @@ public class Baddie : LifeformBase {
     private Animator Animator;
 
     /// <summary>
+    /// Reference to the graphics component so we can rotate it when wandering.
+    /// When attacking and all other states the AI controller handles that but no when wandering
+    /// </summary>
+    private Transform _graphics;
+    /// <summary>
+    /// Need a reference because I set this active or not based off wandering
+    /// </summary>
+    private Transform _armGraphics;
+    /// <summary>
+    /// Don't even ask
+    /// Its an uphill batle rotating that arm whihc isn't apart of the graphics when wandering so this does it for me
+    /// </summary>
+    private Transform _wanderGraphics;
+
+
+    /// <summary>
     /// Amount to shake camera by
     /// </summary>
     public float ShakeAmount = 0.05f;
@@ -73,6 +89,10 @@ public class Baddie : LifeformBase {
     /// Must reset where we are wandering so the object doesn't get stuck in a corner forever
     /// </summary>
     private bool _recalculatingWander = false;
+    /// <summary>
+    /// move much slower when we're wandering
+    /// </summary>
+    private float _wanderMoveSpeed =3f;
 
     /// <summary>
     /// Allows for attack strafing to be done at an interval instead of every frame so it looks more natural
@@ -130,6 +150,20 @@ public class Baddie : LifeformBase {
         //Set the sprite renderer we need for our health drop because it is not set at compile time
         HealthDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[PickupableEnum.HEALTH];
         HealthDrop.GetComponent<Pickupable>().Pickup = PickupableEnum.HEALTH;
+
+        _graphics = transform.FindChild("Graphics");
+        if(_graphics == null) {
+            throw new MissingMemberException();
+        }else {
+            _wanderGraphics = _graphics.FindChild("BaddieWanderArm");
+            if(_wanderGraphics == null) {
+                throw new MissingMemberException();
+            }
+        }
+        _armGraphics = transform.FindChild("arm");
+        if(_armGraphics == null) {
+            throw new MissingMemberException();
+        }
     }
 
     void Update() {
@@ -147,6 +181,13 @@ public class Baddie : LifeformBase {
     /// Based on the state of the entity calculate what the movement should be
     /// </summary>
     private void CalculateVelocityOffState() {
+        if(State != MentalStateEnum.NEUTRAL && _wanderGraphics.gameObject.activeSelf) {
+            _wanderGraphics.gameObject.SetActive(false);
+            _armGraphics.gameObject.SetActive(true);
+        } else if(State == MentalStateEnum.NEUTRAL && !_wanderGraphics.gameObject.activeSelf) {
+            _wanderGraphics.gameObject.SetActive(true);
+            _armGraphics.gameObject.SetActive(false);
+        }
         if (State == MentalStateEnum.NEUTRAL) {
             CalculateWanderVelocity();
         } else if (State == MentalStateEnum.NOTICE) {
@@ -238,8 +279,26 @@ public class Baddie : LifeformBase {
                 _recalculatingWander = false;
             }
         }
-        float targetVelocityX = _previousInput.x * MoveSpeed;
+        float targetVelocityX = _previousInput.x * _wanderMoveSpeed;
          Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+         FlipGraphics(_previousInput);
+    }
+
+    /// <summary>
+    /// Face the way we are wandering
+    /// </summary>
+    private void FlipGraphics(Vector2 wanderingDirection) {
+        //rotate left or right to face target
+        bool graphicsFacingLeft = _graphics.rotation.eulerAngles.y == 180.0f;
+        if(wanderingDirection == Vector2.left && !graphicsFacingLeft) {
+            _graphics.rotation = Quaternion.Euler(0f,-180f, 0f);
+        } else if(wanderingDirection == Vector2.right && graphicsFacingLeft) {
+            _graphics.rotation = Quaternion.Euler(0f, 360f, 0f);
+        }
+    }
+
+    public void ActivateWanderArm() {
+
     }
 
     private void RecalculateWanderStart(bool wanderLeft) {
