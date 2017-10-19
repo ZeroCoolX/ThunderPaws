@@ -171,6 +171,21 @@ public class CollisionController2D : RaycastController {
                 Collisions.FromAbove = (directionY == 1);
             }
         }
+
+        if (Collisions.ClimbingSlope) {
+            float directionX = Mathf.Sign(velocity.x);
+            rayLength = Mathf.Abs(velocity.x) + SkinWidth;
+            Vector2 rayOrigin = ((directionX == -1) ? RayOrigins.BottomLeft : RayOrigins.BottomRight) + Vector2.up * velocity.y;
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, CollisionMask);
+            if (hit) {
+                float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+                //We have collided with a new slope whilst climbing a slope
+                if (slopeAngle != Collisions.SlopeAngle) {
+                    velocity.x = (hit.distance - SkinWidth) * directionX;
+                    Collisions.SlopeAngle = slopeAngle;
+                }
+            }
+        }
     }
 
     /// <summary>
