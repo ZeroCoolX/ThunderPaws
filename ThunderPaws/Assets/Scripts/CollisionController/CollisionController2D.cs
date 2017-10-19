@@ -16,6 +16,11 @@ public class CollisionController2D : RaycastController {
     public CollisionInfo Collisions;
 
     /// <summary>
+    /// Maximum angle we can traverse up
+    /// </summary>
+    private float _maxClimbAngle = 80f;
+
+    /// <summary>
     /// Player input
     /// </summary>
     public Vector2 PlayerInput;
@@ -80,14 +85,34 @@ public class CollisionController2D : RaycastController {
                 if (hit.distance == 0) {
                     continue;
                 }
-                //distance from us to the object <= velocity.x so set it to that
-                velocity.x = (hit.distance - SkinWidth) * directionX;
-                //change ray length once we hit the first thing because we shouldn't cast rays FURTHER than this min one
-                rayLength = hit.distance;
 
-                //Set collision info
-                Collisions.FromLeft = (directionX == -1);
-                Collisions.FromRight = (directionX == 1);
+                //Get the angle of the surface we hit  (handle slopes)
+                float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+                //only do this for the bottom most
+                if (i == 0 && slopeAngle <= _maxClimbAngle) {
+                    print(slopeAngle);
+                    //Don't start moving upward at an angle until we hit the actual slope (this fixes a teeny gap between collider and surface)
+                    float distanceToSlopeStart = 0f;
+                    if(slopeAngle != Collisions.SlopeAnglePrevFrame) {
+                        distanceToSlopeStart = hit.distance - SkinWidth;
+                        velocity.x -= distanceToSlopeStart * directionX;
+                    }
+                    ClimbSlope(ref velocity, slopeAngle);
+                    velocity.x += distanceToSlopeStart * directionX;
+                }
+
+                //Only continue checking collisions if we're not climbing the slope
+                if (!Collisions.ClimbingSlope || slopeAngle > _maxClimbAngle) {
+
+                    //distance from us to the object <= velocity.x so set it to that
+                    velocity.x = (hit.distance - SkinWidth) * directionX;
+                    //change ray length once we hit the first thing because we shouldn't cast rays FURTHER than this min one
+                    rayLength = hit.distance;
+
+                    //Set collision info
+                    Collisions.FromLeft = (directionX == -1);
+                    Collisions.FromRight = (directionX == 1);
+                }
             }
         }
     }
@@ -144,6 +169,24 @@ public class CollisionController2D : RaycastController {
     }
 
     /// <summary>
+    /// Recalculate velocity based off the angle of slope we're hitting
+    /// </summary>
+    /// <param name="velocity"></param>
+    /// <param name="slopeAngle"></param>
+    private void ClimbSlope(ref Vector3 velocity, float slopeAngle) {
+        float moveDistance = Mathf.Abs(velocity.x);
+        float climbVelocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * moveDistance;
+        if (velocity.y <= climbVelocityY) {
+            velocity.y = climbVelocityY;
+            velocity.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDistance * Mathf.Sign(velocity.x);
+            //Must manually set collisions below to true since we're tachnically moving upward on the slope so our Velocity.y > 0
+            Collisions.FromBelow = true;
+            Collisions.ClimbingSlope = true;
+            Collisions.SlopeAngle = slopeAngle;
+        }
+    }
+
+    /// <summary>
     /// After a set interval reset the collisions
     /// </summary>
     void ResetFallingThroughPlatform() {
@@ -179,14 +222,23 @@ public class CollisionController2D : RaycastController {
     public struct CollisionInfo {
         public bool FromAbove, FromBelow;
         public bool FromLeft, FromRight;
+
         public bool NearLedge;
         public bool FallingThroughPlatform;
+
+        public bool ClimbingSlope;
+        public float SlopeAngle, SlopeAnglePrevFrame;
 
         public void Reset() {
             FromAbove = FromBelow = false;
             FromLeft = FromRight = false;
+
             NearLedge = false;
             FallingThroughPlatform = false;
+
+            ClimbingSlope = false;
+            SlopeAnglePrevFrame = SlopeAngle;
+            SlopeAngle = 0f;
         }
     }
 	
