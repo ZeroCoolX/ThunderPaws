@@ -109,6 +109,11 @@ public class CollisionController2D : RaycastController {
                     //change ray length once we hit the first thing because we shouldn't cast rays FURTHER than this min one
                     rayLength = hit.distance;
 
+                    //Must update velocity on the Y axis since we're moving at an upwards angle
+                    if (Collisions.ClimbingSlope) {
+                        velocity.y = Mathf.Tan(Collisions.SlopeAngle * Mathf.Deg2Rad) * Mathf.Abs(velocity.x);
+                    }
+
                     //Set collision info
                     Collisions.FromLeft = (directionX == -1);
                     Collisions.FromRight = (directionX == 1);
@@ -145,7 +150,7 @@ public class CollisionController2D : RaycastController {
                         continue;
                     }
                 }
-                ///Do not collide if we're currently falling through the platform
+                //Do not collide if we're currently falling through the platform
                 if (Collisions.FallingThroughPlatform) {
                     continue;
                 }
