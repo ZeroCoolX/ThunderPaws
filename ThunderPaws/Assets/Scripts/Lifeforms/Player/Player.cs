@@ -28,7 +28,9 @@ public class Player : LifeformBase {
     /// How long to shake the camera
     /// </summary>
     public float ShakeLength = 0.1f;
-
+    /// <summary>
+    /// List of owned weapons that have either been picked up, purchased, or default
+    /// </summary>
     private List<WeaponEnum> _ownedWeapons;
 
     /// <summary>
@@ -73,6 +75,11 @@ public class Player : LifeformBase {
     /// Indicates the arm sprite is right side up
     /// </summary>
     private bool _rightSideUp = true;
+
+    /// <summary>
+    /// How far the world extends downwards until we kill and respawn the player
+    /// </summary>
+    public float WorldEdge = -25f;
 
     /// <summary>
     /// Input supplied from user input
@@ -147,6 +154,10 @@ public class Player : LifeformBase {
         //Regenerate health over time
         //TODO: Only invoke regen if health < max
         InvokeRepeating("RegenHealth", 1f / _stats.HealthRegenRate, 1f / _stats.HealthRegenRate);
+    }
+
+    private void FixedUpdate() {
+        FallOffMapCheck();
     }
 
     void Update() {
@@ -370,12 +381,30 @@ public class Player : LifeformBase {
         }
     }
 
+    /// <summary>
+    /// Rocket jumping shouldnt be easy
+    /// Only 1/4 of a second interval to rocket jump
+    /// </summary>
     public void AllowRocketJump() {
         _rocketJumpInitiated = true;
         Invoke("ResetRocketJump", 0.25f);
     }
 
+    /// <summary>
+    /// Reset after rocket jumped
+    /// </summary>
     public void ResetRocketJump() {
         _rocketJumpInitiated = false;
+    }
+
+    /// <summary>
+    /// Once the player leaves the Cameras viewport it most likely (I haven't hit a scenario where this wasn't the case)
+    /// because they fell off the map. So kill them and take a life
+    /// </summary>
+    public void FallOffMapCheck() {
+        if (transform.position.y <= WorldEdge) {
+            print("kill the player because he fell off");
+            DamageHealth(_stats.MaxHealth);
+        }
     }
 }
