@@ -16,9 +16,13 @@ public class CollisionController2D : RaycastController {
     public CollisionInfo Collisions;
 
     /// <summary>
-    /// Maximum angle we can traverse up
+    /// Maximum angle upward we can traverse up
     /// </summary>
     private float _maxClimbAngle = 80f;
+    /// <summary>
+    /// Maximum angle downward we can traverse
+    /// </summary>
+    private float _maxDescendAngle = 75f;
 
     /// <summary>
     /// Player input
@@ -45,6 +49,10 @@ public class CollisionController2D : RaycastController {
         PlayerInput = input;
         UpdateRaycasyOrigins();
         Collisions.Reset();
+        //Only check for descending slope if we're moving downward. 
+        if (velocity.y < 0) {
+            DescendSlope(ref velocity);
+        }
         if(velocity.x != 0) {
             CalculateHorizontalCollisions(ref velocity);
         }
@@ -172,6 +180,7 @@ public class CollisionController2D : RaycastController {
             }
         }
 
+        //Check for a new slope angle while on the current slope
         if (Collisions.ClimbingSlope) {
             float directionX = Mathf.Sign(velocity.x);
             rayLength = Mathf.Abs(velocity.x) + SkinWidth;
@@ -203,6 +212,35 @@ public class CollisionController2D : RaycastController {
             Collisions.FromBelow = true;
             Collisions.ClimbingSlope = true;
             Collisions.SlopeAngle = slopeAngle;
+        }
+    }
+
+    /// <summary>
+    /// Calculate the velocity based off going down a slope
+    /// </summary>
+    /// <param name="velocity"></param>
+    private void DescendSlope(ref Vector3 velocity) {
+        float directionX = Mathf.Sign(velocity.x);
+        Vector2 rayOrigin = ((directionX == -1) ? RayOrigins.BottomRight : RayOrigins.BottomLeft);
+        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, -Vector2.up, Mathf.Infinity, CollisionMask);
+        if (hit) {
+            float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
+            if(slopeAngle != 0f && slopeAngle <= _maxDescendAngle) {
+                //Indicates we're moving down the slope because the slopeAngle.x is moving in the same direction as we are
+                if(Mathf.Sign(hit.normal.x) == directionX) {
+                    //If the distance to the slope is less than how far we need to move based on the slopeangle, we're close enough for the slope to effect us
+                    if(hit.distance - SkinWidth <= Mathf.Tan(slopeAngle * Mathf.Deg2Rad) * Mathf.Abs(velocity.x)) {
+                        float slopeMoveDistance = Mathf.Abs(velocity.x);
+                        float descendVelocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * slopeMoveDistance;
+                        velocity.y -= descendVelocityY;
+                        velocity.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * slopeMoveDistance * Mathf.Sign(velocity.x);
+
+                        Collisions.SlopeAngle = slopeAngle;
+                        Collisions.DescendingSlope = true;
+                        Collisions.FromBelow = true;
+                    }
+                }
+            }
         }
     }
 
@@ -246,7 +284,7 @@ public class CollisionController2D : RaycastController {
         public bool NearLedge;
         public bool FallingThroughPlatform;
 
-        public bool ClimbingSlope;
+        public bool ClimbingSlope, DescendingSlope;
         public float SlopeAngle, SlopeAnglePrevFrame;
 
         public void Reset() {
@@ -257,6 +295,7 @@ public class CollisionController2D : RaycastController {
             FallingThroughPlatform = false;
 
             ClimbingSlope = false;
+            DescendingSlope = false;
             SlopeAnglePrevFrame = SlopeAngle;
             SlopeAngle = 0f;
         }
