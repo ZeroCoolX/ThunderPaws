@@ -60,6 +60,7 @@ public class GameMaster : MonoBehaviour {
     /// Remaining lives counter must persist through player deaths
     /// </summary>
     public int RemainingLives { get { return _remainingLives; } set { _remainingLives = value; } }
+    public int NipAccumulated { get; set; }
 
     /// <summary>
     /// Delegate for switching weapons
@@ -201,6 +202,9 @@ public class GameMaster : MonoBehaviour {
         }
         if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.HEALTH)) {
             PickupableSpriteMap.Sprites.Add(PickupableEnum.MACHINE_GUN, Sprites[1]);
+        }
+        if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.CURRENCY)) {
+            PickupableSpriteMap.Sprites.Add(PickupableEnum.CURRENCY, Sprites[2]);
         }
         if (!CompanionMap.Companions.ContainsKey(CompanionEnum.BASE)) {
             CompanionMap.Companions.Add(CompanionEnum.BASE, Companions[0]);

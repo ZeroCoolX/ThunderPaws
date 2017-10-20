@@ -252,6 +252,11 @@ public class Player : LifeformBase {
         LifeCheck();
     } 
 
+    public void MakeWalletTransaction(int amount) {
+        _stats.NipAmount += amount;
+        GameMaster.Instance.NipAccumulated = _stats.NipAmount;
+    }
+
     /// <summary>
     /// Increment health by a small amount and update visual healthbar
     /// </summary>
@@ -355,7 +360,7 @@ public class Player : LifeformBase {
                 _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
                 break;
             case PickupableEnum.CURRENCY:
-                throw new NotImplementedException();
+                MakeWalletTransaction(50);
                 break;
             case PickupableEnum.MACHINE_GUN:
                 _ownedWeapons.Add(WeaponEnum.MACHINE_GUN);

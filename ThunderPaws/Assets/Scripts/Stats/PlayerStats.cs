@@ -7,6 +7,11 @@ public class PlayerStats : LifeformStats {
     /// Singleton so other scripts can reference this one persistent object
     /// </summary>
     public static PlayerStats Instance;
+    /// <summary>
+    /// Name and "what" currency is in this game is absolutely subject to change
+    /// Catnip just seems right atm
+    /// </summary>
+    public int NipAmount;
 
     private void Awake() {
         //Set all the stat values
