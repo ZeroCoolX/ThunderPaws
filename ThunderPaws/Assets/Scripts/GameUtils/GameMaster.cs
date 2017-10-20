@@ -75,9 +75,14 @@ public class GameMaster : MonoBehaviour {
     /// </summary>
     public Transform Player;
     /// <summary>
-    /// Where to respawn the player 
+    /// Collection of all possible places of where to respawn the player 
     /// </summary>
-    public Transform SpawnPoint;
+    public Transform[] SpawnPoints;
+    /// <summary>
+    /// Indicates which spawn point the player should spawn from
+    /// Used for checkpoints
+    /// </summary>
+    public int SpawnPointIndex;
     /// <summary>
     /// How long to wait from player death to respawn
     /// </summary>
@@ -100,6 +105,11 @@ public class GameMaster : MonoBehaviour {
             Debug.LogError("GameMaster.cs: No CameraShake found");
             throw new MissingComponentException();
         }
+        //Double check that there is at least one spawn point in this level
+        if(SpawnPoints.Length <= 0) {
+            throw new MissingReferenceException("No spawn points for this level");
+        }
+        SpawnPointIndex = 0;
         //Set remaining lives
         _remainingLives = _maxLives;
     }
@@ -179,8 +189,8 @@ public class GameMaster : MonoBehaviour {
     private IEnumerator RespawnPlayer() {
         //TODO: spawn sound
         yield return new WaitForSeconds(SpawnDelay);
-        Instantiate(Player, SpawnPoint.position, SpawnPoint.rotation);
-        GameObject clone = Instantiate(SpawnPrefab, SpawnPoint.position, SpawnPoint.rotation) as GameObject;
+        Instantiate(Player, SpawnPoints[SpawnPointIndex].position, SpawnPoints[SpawnPointIndex].rotation);
+        GameObject clone = Instantiate(SpawnPrefab, SpawnPoints[SpawnPointIndex].position, SpawnPoints[SpawnPointIndex].rotation) as GameObject;
         Destroy(clone, 3f);
     }
 
@@ -195,6 +205,10 @@ public class GameMaster : MonoBehaviour {
         if (!CompanionMap.Companions.ContainsKey(CompanionEnum.BASE)) {
             CompanionMap.Companions.Add(CompanionEnum.BASE, Companions[0]);
         }
+    }
+
+    public void IncrementSpawnPoint() {
+        SpawnPointIndex = Mathf.Min(++SpawnPointIndex, SpawnPoints.Length - 1);
     }
 
     /// <summary>

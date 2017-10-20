@@ -2,66 +2,64 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Pickupable : MonoBehaviour {
+/// <summary>
+/// Indicates when the player has made it to a checkpoint and updates which spawn point the player should respawn to
+/// </summary>
+public class CheckpointTrigger : MonoBehaviour {
+
     /// <summary>
-    /// Pickup type
-    /// </summary>
-    public PickupableEnum Pickup;
-    /// <summary>
-    /// This is the object we want to be able to pick us up
+    /// Who we want to detect colliding with the checkpoint
     /// </summary>
     public Transform Target;
     /// <summary>
-    /// Layermask to indicate what we can hit
-    /// Right now its hardcoded to Player
+    /// Name of the target we should look for
+    /// </summary>
+    private string _targetName = "Player";
+
+    /// <summary>
+    /// What layer should we check for collisions on
     /// </summary>
     public LayerMask WhatToHit;
-    /// <summary>
-    /// The name of the tag of the object we want to be picked up by
-    /// </summary>
-    public string TargetName;
 
-    private void Start() {
+	// Use this for initialization
+	void Start () {
         //Placeholder right now till I figure out how I really want to do pickups
-        if(Target == null) {
-            FindTarget(TargetName);
+        if (Target == null) {
+            FindTarget(_targetName);
         }
     }
 
     private void Update() {
         if (Target == null) {
-            FindTarget(TargetName);
+            FindTarget(_targetName);
         } else {
             //Raycast to check if we could potentially the target
             RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, Target.position - transform.position);
             if (possibleHit.collider != null) {
-                //TODO: change the distance of the ray we draw to be relative to the pickup size
                 RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Target.position - transform.position, 0.75f, WhatToHit);
                 if (distCheck.collider != null) {
-                    ApplyPickup(distCheck.collider);
+                    ApplyCheckpoint(distCheck.collider);
                     return;
                 }
             }
         }
     }
 
-    public void ApplyPickup(Collider2D hitObject) {
-        //Apply pickup to whoever we hit
+    /// <summary>
+    /// Update the spawn index on the game master
+    /// </summary>
+    /// <param name="hitObject"></param>
+    public void ApplyCheckpoint(Collider2D hitObject) {
         switch (hitObject.gameObject.tag) {
             case "Player":
                 Player player = hitObject.GetComponent<Player>();
                 if (player != null) {
-                    player.ApplyPickup(Pickup);
+                    print("apply checkpoint");
+                    GameMaster.Instance.IncrementSpawnPoint();
+                    Destroy(gameObject);
                 }
                 break;
         }
-
-        //TODO: Add particles to pickup
-        //Mask it so when we hit something the particles shoot OUT from it.
-        //Transform hitParticles = Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
-        ////Destroy hit particles
-        //Destroy(hitParticles.gameObject, 1f);
-        Destroy(gameObject);
     }
 
     protected void FindTarget(string target) {

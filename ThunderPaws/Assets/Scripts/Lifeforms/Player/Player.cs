@@ -156,6 +156,10 @@ public class Player : LifeformBase {
         InvokeRepeating("RegenHealth", 1f / _stats.HealthRegenRate, 1f / _stats.HealthRegenRate);
     }
 
+    /// <summary>
+    /// Check for falling off the map.
+    /// Perhaps should be extracted to the parent LifeFormBase
+    /// </summary>
     private void FixedUpdate() {
         FallOffMapCheck();
     }
