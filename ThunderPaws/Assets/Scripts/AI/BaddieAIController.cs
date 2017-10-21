@@ -56,7 +56,7 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
     /// <summary>
     /// Max distance the target can be away from this and still be attacked
     /// </summary>
-    private float _attackThreshold = 10f;
+    private float _attackThreshold = 13f;
     /// <summary>
     /// If the target gets within this distance the object will retreat to a further safer distance
     /// </summary>
@@ -117,6 +117,11 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
     /// </summary>
     private void UpdateState() {
         try {
+            //Necessary for the baddie to determine if they should jump over obstacles
+            //TODO: probably extract this out of the Baddie and into the BaddieAI 
+            if (Baddie.Target != null) {
+                Baddie.Target = Target;
+            }
             if (Target != null) {
                 //Get the distance between them
                 float distanceToTarget = Mathf.Abs(transform.position.x - Target.transform.position.x);

@@ -89,10 +89,15 @@ public class Baddie : LifeformBase {
     /// Must reset where we are wandering so the object doesn't get stuck in a corner forever
     /// </summary>
     private bool _recalculatingWander = false;
+
     /// <summary>
-    /// move much slower when we're wandering
+    /// Much much slower when we're wandering
     /// </summary>
-    private float _wanderMoveSpeed =3f;
+    private float _wanderMoveSpeed = 3f;
+    /// <summary>
+    /// Pursue faster than normal speed by still a little slower than player
+    /// </summary>
+    private float _pursueMovespeed = 7f;
 
     /// <summary>
     /// Allows for attack strafing to be done at an interval instead of every frame so it looks more natural
@@ -111,6 +116,8 @@ public class Baddie : LifeformBase {
     /// Set by the AI controller if we get into the PERSONAL_SPACE zone, the AI will tell us which way to create space
     /// </summary>
     public bool TargetOnLeft;
+
+    public Transform Target { get; set; }
 
     /// <summary>
     /// State of the object.
@@ -198,6 +205,15 @@ public class Baddie : LifeformBase {
             CalculatePursueAttackVelocity();
         }else if(State == MentalStateEnum.PERSONAL_SPACE) {
             CalculateCreateSpaceVelocity();
+        }
+        if(Target != null && State != MentalStateEnum.NOTICE && State != MentalStateEnum.NEUTRAL) {
+            //Raycast to check if there is something in our way
+            float distance = Vector2.Distance(transform.position, Target.position);
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, Velocity, 1.5f, Controller.CollisionMask);
+            //This indicates the target is within range, however we hit something and now we need to jump over it
+            if (hit) {
+                CalculateJumpVelocity();
+            }
         }
     }
 
@@ -297,10 +313,6 @@ public class Baddie : LifeformBase {
         }
     }
 
-    public void ActivateWanderArm() {
-
-    }
-
     private void RecalculateWanderStart(bool wanderLeft) {
         _recalculatingWander = true;
         //Double (+-) where we started wandering from in the opposite direction
@@ -321,8 +333,9 @@ public class Baddie : LifeformBase {
     /// Helper method at the moment to force a jump just used to add a little diversity in when attacking
     /// </summary>
     private void CalculateJumpVelocity() {
-        Velocity.x = 0;
-        if (Controller.Collisions.FromBelow) {
+        //Velocity.x = 0;
+        //Need to filter out slopes, because that is not technically a collision
+        if (Controller.Collisions.FromBelow && !(Controller.Collisions.ClimbingSlope || Controller.Collisions.DescendingSlope)) {
             Velocity.y = MaxJumpVelocity;
         }
     }
@@ -374,7 +387,20 @@ public class Baddie : LifeformBase {
     /// Move in the direction of the target to pursue
     /// </summary>
     private void CalculatePursueAttackVelocity() {
-        float targetVelocityX = MoveSpeed * (TargetOnLeft ? -1 : 1);
+        //If there is an obstacle in the way of the pursuit jump over it 
+        //Actually this is where some more intelligent pathfinding could be used for checking where the jump should actually be
+        //if target Y is greater than out Y then jump but till move in the direction of the X
+
+
+        ////Raycast to check if there is something in our way
+        //float distance = Vector2.Distance(transform.position, Target.position);
+        //RaycastHit2D hit = Physics2D.Raycast(transform.position, Target.position - transform.position, 3f, Controller.CollisionMask);
+        ////This indicates the target is within range, however we hit something and now we need to jump over it
+        //if (hit) {
+        //    CalculateJumpVelocity();
+        //}
+
+        float targetVelocityX = _pursueMovespeed * (TargetOnLeft ? -1 : 1);
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
     }
 
