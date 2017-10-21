@@ -33,6 +33,11 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
     private bool _armIsLeft = false;
 
     /// <summary>
+    /// Indicates what the baddie cannot see through
+    /// </summary>
+    private readonly List<string> _cannotSeeThrough = new List<string> {"OBSTACLE-SOLID"};
+
+    /// <summary>
     /// AI needs a reference to its weapon so it can control when its firing
     /// </summary>
     private BaddieWeapon _baddieWeapon;
@@ -116,6 +121,20 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
                 //Get the distance between them
                 float distanceToTarget = Mathf.Abs(transform.position.x - Target.transform.position.x);
                 Baddie.TargetOnLeft = IsFacingLeft();
+
+                //First check if there is an obstacle between them - baddies can't see through walls unless they have some previous knowledge: Attacking, Pursuing...etc
+                if (Baddie.State == MentalStateEnum.NEUTRAL) {
+                    //Raycast to check if we could potentially the target
+                    float distance = Vector2.Distance(transform.position, Target.position);
+                    RaycastHit2D hit = Physics2D.Raycast(transform.position, Target.position - transform.position, distance, Baddie.GetControllerLayerMask());
+                    //This indicates the target is within range, however we hit something we cannot see through 
+                    if (hit) {
+                        if (_cannotSeeThrough.Contains(hit.collider.gameObject.tag)) {
+                            return;
+                        }
+                    }
+                }
+
                 if (distanceToTarget <= _personalSpaceThreshold) {
                     //Update the direction we need ot move to create space
                     Baddie.State = MentalStateEnum.PERSONAL_SPACE;

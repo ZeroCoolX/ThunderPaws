@@ -85,6 +85,10 @@ public abstract class LifeformBase : MonoBehaviour {
         print("Gravity: " + Gravity + "\n Jump Velocity: " + MaxJumpVelocity);
     }
 
+    public LayerMask GetControllerLayerMask() {
+        return Controller.CollisionMask;
+    }
+
     /// <summary>
     /// Add the gravity constant to .y component of velocity
     /// Do not accumulate gravity if colliding with anything vertically
