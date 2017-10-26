@@ -7,7 +7,7 @@ public class GameMaster : MonoBehaviour {
     /// List of possible pikcupable sprite references so we can fill a map with corresponding enums so whenever something picks up one, they know whaat to do with it
     /// Also this allows us to programatically set the SpriteRenderer of any generic Pickupable without having to create specific prefabs for each
     /// </summary>
-    public Sprite[] Sprites = new Sprite[2];
+    public Sprite[] Sprites = new Sprite[4];
 
     /// <summary>
     /// List of all possible companions so we can map them to their correct enums for instantiation
@@ -125,6 +125,10 @@ public class GameMaster : MonoBehaviour {
             //Switch to machine gun
             WeaponChoice = WeaponEnum.MACHINE_GUN;
             OnWeaponSwitch.Invoke(WeaponChoice);
+        } else if (Input.GetKeyDown(KeyCode.Alpha3)) {
+            //Switch to machine gun
+            WeaponChoice = WeaponEnum.BAZOOKA;
+            OnWeaponSwitch.Invoke(WeaponChoice);
         }
     }
 
@@ -200,11 +204,14 @@ public class GameMaster : MonoBehaviour {
         if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.HEALTH)) {
             PickupableSpriteMap.Sprites.Add(PickupableEnum.HEALTH, Sprites[0]);
         }
-        if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.HEALTH)) {
+        if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.MACHINE_GUN)) {
             PickupableSpriteMap.Sprites.Add(PickupableEnum.MACHINE_GUN, Sprites[1]);
         }
         if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.CURRENCY)) {
             PickupableSpriteMap.Sprites.Add(PickupableEnum.CURRENCY, Sprites[2]);
+        }
+        if (!PickupableSpriteMap.Sprites.ContainsKey(PickupableEnum.BAZOOKA)) {
+            PickupableSpriteMap.Sprites.Add(PickupableEnum.BAZOOKA, Sprites[3]);
         }
         if (!CompanionMap.Companions.ContainsKey(CompanionEnum.BASE)) {
             CompanionMap.Companions.Add(CompanionEnum.BASE, Companions[0]);

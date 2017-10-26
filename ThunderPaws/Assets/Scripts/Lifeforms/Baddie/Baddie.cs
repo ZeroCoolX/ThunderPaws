@@ -209,9 +209,10 @@ public class Baddie : LifeformBase {
         if(Target != null && State != MentalStateEnum.NOTICE && State != MentalStateEnum.NEUTRAL) {
             //Raycast to check if there is something in our way
             float distance = Vector2.Distance(transform.position, Target.position);
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, Velocity, 1.5f, Controller.CollisionMask);
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, Velocity, 3f, Controller.CollisionMask);
             //This indicates the target is within range, however we hit something and now we need to jump over it
             if (hit) {
+                print("should jump");
                 CalculateJumpVelocity();
             }
         }

@@ -117,15 +117,11 @@ public class BaddieAIController : MonoBehaviour {//TODO: Extend off parent AICon
     /// </summary>
     private void UpdateState() {
         try {
-            //Necessary for the baddie to determine if they should jump over obstacles
-            //TODO: probably extract this out of the Baddie and into the BaddieAI 
-            if (Baddie.Target != null) {
-                Baddie.Target = Target;
-            }
             if (Target != null) {
                 //Get the distance between them
                 float distanceToTarget = Mathf.Abs(transform.position.x - Target.transform.position.x);
                 Baddie.TargetOnLeft = IsFacingLeft();
+                Baddie.Target = Target;
 
                 //First check if there is an obstacle between them - baddies can't see through walls unless they have some previous knowledge: Attacking, Pursuing...etc
                 if (Baddie.State == MentalStateEnum.NEUTRAL) {

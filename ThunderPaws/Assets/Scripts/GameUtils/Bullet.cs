@@ -14,7 +14,7 @@ public class Bullet : MonoBehaviour {
     /// <summary>
     /// How much damage this bullet does
     /// </summary>
-    public int Damage = 5;
+    public int Damage;
 
     /// <summary>
     /// Max time in seconds this object can stay alive

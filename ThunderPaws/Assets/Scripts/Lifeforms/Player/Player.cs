@@ -41,6 +41,8 @@ public class Player : LifeformBase {
     private GameObject _machineGun;
     [SerializeField]
     private GameObject _pistol;
+    [SerializeField]
+    private GameObject _bazooka;
 
     /// <summary>
     /// Particles to emit upon death
@@ -210,15 +212,19 @@ public class Player : LifeformBase {
     private void SelectWeapon(WeaponEnum choice) {
         //Only switch to the desired weapon if the player owns it
         if (_ownedWeapons.Contains(choice)) {
-            if (_machineGun != null && _pistol != null) {
+            if (_machineGun != null && _pistol != null && _bazooka != null) {
                 _machineGun.SetActive(false);
                 _pistol.SetActive(false);
+                _bazooka.SetActive(false);
                 switch (choice) {
                     case WeaponEnum.PISTOL:
                         _pistol.SetActive(true);
                         break;
                     case WeaponEnum.MACHINE_GUN:
                         _machineGun.SetActive(true);
+                        break;
+                    case WeaponEnum.BAZOOKA:
+                        _bazooka.SetActive(true);
                         break;
                     default:
                         _pistol.SetActive(true);
@@ -364,6 +370,9 @@ public class Player : LifeformBase {
                 break;
             case PickupableEnum.MACHINE_GUN:
                 _ownedWeapons.Add(WeaponEnum.MACHINE_GUN);
+                break;
+            case PickupableEnum.BAZOOKA:
+                _ownedWeapons.Add(WeaponEnum.BAZOOKA);
                 break;
             case PickupableEnum.COMPANION:
                 CreateCompanion();

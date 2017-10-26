@@ -15,7 +15,7 @@ public abstract class AbstractWeapon : MonoBehaviour {
     /// <summary>
     /// How much damage it does
     /// </summary>
-    public int Damage = 10;
+    public int Damage;
 
     /// <summary>
     /// How fast the bullet travels
@@ -69,6 +69,7 @@ public abstract class AbstractWeapon : MonoBehaviour {
         //Set layermask of parent (either player or baddie)
         bullet.SetLayerMask(whatToHit);
         bullet.gameObject.layer = LayerMask.NameToLayer(layer);
+        bullet.Damage = Damage;
         bullet.MoveSpeed = BulletSpeed;
         print(bullet.MoveSpeed);
         //Fire at the point clicked
