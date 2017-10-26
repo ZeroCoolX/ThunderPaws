@@ -13,6 +13,11 @@ public abstract class AbstractWeapon : MonoBehaviour {
     [Header("Abstract: Attributes")]
     public float FireRate = 0f;
     /// <summary>
+    /// Value to add onto the current time.
+    /// Default value of 1
+    /// </summary>
+    public float FireDelay = 1;
+    /// <summary>
     /// How much damage it does
     /// </summary>
     public int Damage;

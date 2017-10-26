@@ -31,14 +31,14 @@ public class Weapon : AbstractWeapon {
     }
 
     private void Update() {
-        if (FireRate == 0) {//Single fire
+         if (FireRate == 0) {//Single fire
             if (Input.GetButtonDown("Fire1")) {
                 Shoot();
             }
         } else {//Automatic fire
             if(Input.GetButton("Fire1") && Time.time > _timeToFire) {
                 //Update time to fire
-                _timeToFire = Time.time + 1 / FireRate;
+                _timeToFire = Time.time + FireDelay / FireRate;
                 Shoot();
             }
         }
