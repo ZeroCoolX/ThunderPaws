@@ -7,7 +7,7 @@ public class HomingBullet : BulletBase {
     /// <summary>
     /// The distance from the target to which the missile no longer tracks the target and fires straight into whatever direction its currently going
     /// </summary>
-    private float _criticalZoneDistance = 5f;
+    private float _criticalZoneDistance = 3f;
 
     /// <summary>
     /// Indicates the missile has passed through the critical zone and should no longer track the target
@@ -80,6 +80,7 @@ public class HomingBullet : BulletBase {
                 UpdateTracking();
             }
         } else {
+            //Set the current direction infinetly far so the missile moves in that direction forever
             _criticalZoneEntered = true;
             TargetDirection *= 900f;
         }
@@ -92,6 +93,15 @@ public class HomingBullet : BulletBase {
     /// </summary>
     private void UpdateTracking() {
         TargetDirection = Target.position - transform.position;
+        var diff = TargetDirection;
+        //Normalize the vector x + y + z = 1
+        diff.Normalize();
+
+        //find the angle in degrees
+        float rotZ = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
+
+        //apply the rotation
+        transform.rotation = Quaternion.Euler(0f, 0f, rotZ);//degrees not radians
     }
 
     /// <summary>
@@ -99,7 +109,7 @@ public class HomingBullet : BulletBase {
     /// </summary>
     /// <param name="hitPos"></param>
     /// <param name="hitObject"></param>
-    protected override void HitTarget(Vector3 hitPos, Collider2D hitObject) {
+    protected override void HitTarget(Vector3 hitPos, Collider2D hitObject) {//TODO: apply AOE damage for homing missile.
         //Damage whoever we hit - or rocket jump
         Player player;
         switch (hitObject.gameObject.tag) {
