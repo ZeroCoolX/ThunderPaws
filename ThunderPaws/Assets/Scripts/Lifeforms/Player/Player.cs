@@ -81,7 +81,7 @@ public class Player : LifeformBase {
     /// <summary>
     /// How far the world extends downwards until we kill and respawn the player
     /// </summary>
-    public float WorldEdge = -25f;
+    public float WorldEdge = -110f;
 
     /// <summary>
     /// Input supplied from user input

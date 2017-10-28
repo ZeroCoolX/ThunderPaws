@@ -80,7 +80,7 @@ public class BaddieBossAIController : MonoBehaviour {
             return;
         }
         LockOnTarget();
-       // _baddieWeapon.ShouldShoot = true;
+        _baddieWeapon.ShouldShoot = true;
     }
 
 

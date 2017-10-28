@@ -13,9 +13,9 @@ public class BaddieBoss : LifeformBase {
     /// </summary>
     public Transform DeathParticles;
     /// <summary>
-    /// Health object that drops when baddie dies
+    /// Additional drops aside from health that a baddie can drop
     /// </summary>
-    public Transform HealthDrop;
+    public Transform DeathDrop;
     /// <summary>
     /// Amount of health to drop on death
     /// </summary>
@@ -68,11 +68,6 @@ public class BaddieBoss : LifeformBase {
     /// How long to shake camera for
     /// </summary>
     public float ShakeLength = 0.1f;
-
-    /// <summary>
-    ///  Stores the generated input until it changes allowing us to know which way we came from so go the opposite direction. 
-    /// </summary>
-    private Vector2 _previousInput;
 
     /// <summary>
     /// Much much slower when we're wandering
@@ -141,6 +136,11 @@ public class BaddieBoss : LifeformBase {
     private Vector2 _targetPosition;
 
     /// <summary>
+    /// Indicates what should be the end level spawn after the player beats the boss
+    /// </summary>
+    public Transform PortalFinish;
+
+    /// <summary>
     /// State of the object.
     /// Determines how we move.
     /// </summary>
@@ -175,9 +175,10 @@ public class BaddieBoss : LifeformBase {
             Debug.LogError("No death particles found");
             throw new UnassignedReferenceException();
         }
+
         //Set the sprite renderer we need for our health drop because it is not set at compile time
-        HealthDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[PickupableEnum.HEALTH];
-        HealthDrop.GetComponent<Pickupable>().Pickup = PickupableEnum.HEALTH;
+        DeathDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[PickupableEnum.BAZOOKA];
+        DeathDrop.GetComponent<Pickupable>().Pickup = PickupableEnum.BAZOOKA;
 
         _graphics = transform.FindChild("Graphics");
         if (_graphics == null) {
@@ -333,8 +334,14 @@ public class BaddieBoss : LifeformBase {
         //Kill the baddie
         if (_stats.CurHealth <= 0) {
             //Drop Health
-            var pickupable = Instantiate(HealthDrop, transform.position, transform.rotation) as Transform;
+            var pickupable = Instantiate(DeathDrop, transform.position, transform.rotation) as Transform;
             pickupable.GetComponent<Pickupable>().TargetName = "Player";
+            pickupable.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[PickupableEnum.BAZOOKA];
+            pickupable.GetComponent<Pickupable>().Pickup = PickupableEnum.BAZOOKA;
+
+            PortalFinish.gameObject.SetActive(true);
+
+            //Drop the Bazooka!
             Destroy(gameObject);
             //GameMaster.KillBaddie(this);//TODO: should take in lifeform
             //TODO: Add audio

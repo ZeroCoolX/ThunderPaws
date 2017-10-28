@@ -38,7 +38,12 @@ public class HomingBullet : BulletBase {
     }
 
     void Update() {
-        print("target.position: " + Target.position + " TargetPos = " + TargetPos);
+        if (Target == null) {
+            if(GameObject.FindGameObjectWithTag("Player") != null) {
+                Target = GameObject.FindGameObjectWithTag("Player").transform;
+            }
+            return;
+        } 
         //Raycast to check if we could potentially the target
         RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, TargetDirection);
         Vector3 dir;
