@@ -70,15 +70,20 @@ public abstract class AbstractWeapon : MonoBehaviour {
         //Fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
         Transform bulletInstance = Instantiate(BulletTrailPrefab, FirePoint.position, FirePoint.rotation) as Transform;
         //Parent the bullet to who shot it so we know what to hit (parents LayerMask whatToHit)
-        Bullet bullet = bulletInstance.GetComponent<Bullet>();
+        BulletBase projectile;
+        if(bulletInstance.GetComponent<Bullet>() == null) {
+            projectile = bulletInstance.GetComponent<HomingBullet>();
+        }else {
+            projectile = bulletInstance.GetComponent<Bullet>();
+        }
         //Set layermask of parent (either player or baddie)
-        bullet.SetLayerMask(whatToHit);
-        bullet.gameObject.layer = LayerMask.NameToLayer(layer);
-        bullet.Damage = Damage;
-        bullet.MoveSpeed = BulletSpeed;
-        print(bullet.MoveSpeed);
+        projectile.SetLayerMask(whatToHit);
+        projectile.gameObject.layer = LayerMask.NameToLayer(layer);
+        projectile.Damage = Damage;
+        projectile.MoveSpeed = BulletSpeed;
+        print(projectile.MoveSpeed);
         //Fire at the point clicked
-        bullet.Fire(shotPos, shotNormal);
+        projectile.Fire(shotPos, shotNormal);
 
         //Generate muzzleFlash
         Transform muzzleFlash = Instantiate(MuzzleFlashPrefab, FirePoint.position, FirePoint.rotation) as Transform;
