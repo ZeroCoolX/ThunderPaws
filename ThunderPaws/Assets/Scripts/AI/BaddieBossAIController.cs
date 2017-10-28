@@ -66,10 +66,7 @@ public class BaddieBossAIController : MonoBehaviour {
             }
             return;
         }
-
-        //twice a second look around for the target
-        InvokeRepeating("UpdateState", 0f, 0.5f);
-        _baddieWeapon.ShouldShoot = false;
+        _baddieWeapon.ShouldShoot = true;
     }
 
     // Update is called once per frame
@@ -83,7 +80,7 @@ public class BaddieBossAIController : MonoBehaviour {
             return;
         }
         LockOnTarget();
-        //_baddieWeapon.ShouldShoot = true;
+       // _baddieWeapon.ShouldShoot = true;
     }
 
 

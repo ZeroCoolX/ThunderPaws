@@ -73,29 +73,12 @@ public class BaddieBoss : LifeformBase {
     ///  Stores the generated input until it changes allowing us to know which way we came from so go the opposite direction. 
     /// </summary>
     private Vector2 _previousInput;
-    /// <summary>
-    /// Farthest this object can wander.
-    /// Its updated randomly with a random value within a range
-    /// </summary>
-    private float _maxWanderDistance = 10f;
-    /// <summary>
-    /// Everytime we start wandering in a direction we want to store where we started wandering from so we know when we've wandered far enough
-    /// </summary>
-    private Vector2 _wanderStart;
-    /// <summary>
-    /// Used when we collided with something before our wander threshold
-    /// Must reset where we are wandering so the object doesn't get stuck in a corner forever
-    /// </summary>
-    private bool _recalculatingWander = false;
 
     /// <summary>
     /// Much much slower when we're wandering
     /// </summary>
-    private float _wanderMoveSpeed = 3f;
-    /// <summary>
-    /// Pursue faster than normal speed by still a little slower than player
-    /// </summary>
-    private float _pursueMovespeed = 7f;
+    private float _idleMoveSpeed = 1f;
+
 
     /// <summary>
     /// Allows for attack strafing to be done at an interval instead of every frame so it looks more natural
@@ -108,7 +91,7 @@ public class BaddieBoss : LifeformBase {
     /// <summary>
     /// Need to keep a reference in case we're currently moving in a strafe direction we have to update the speed based off the last known strafe velocity
     /// </summary>
-    private float _currentStrafeVelocity;
+    private Vector2 _currentStrafeVelocity;
 
     /// <summary>
     /// Set by the AI controller if we get into the PERSONAL_SPACE zone, the AI will tell us which way to create space
@@ -116,6 +99,46 @@ public class BaddieBoss : LifeformBase {
     public bool TargetOnLeft;
 
     public Transform Target { get; set; }
+
+    /// <summary>
+    /// Indicates where the "center" of the baddie boss's movement constraints are similar to that of the companion.
+    /// Allows us to draw an invisible box around the origin for which will be the area of movement for the boss.
+    /// This object can move x amount away from the origin.
+    /// </summary>
+    private Transform _baddieBossOrigin;
+    /// <summary>
+    /// Position representation of where the origin of the baddie boss is
+    /// </summary>
+    private Vector3 _origin;
+    /// <summary>
+    /// How far away from the origin can the companion float
+    /// </summary>
+    private Vector2 _floatReach = new Vector2(15f, 6f);
+    /// <summary>
+    /// Just used as a reference for the Mathf.SmoothDamp function
+    /// </summary>
+    protected float VelocityYSmoothing;
+    /// <summary>
+    /// Struct storing plane locations
+    /// </summary>
+    public ExistenceBounds Bounds;
+    /// <summary>
+    /// Indicates a 4 quadrant representation of the aarea to which the boss badd can navigate
+    /// </summary>
+    public Quadrants Quads;
+    /// <summary>
+    /// A small delay between hitting the bounds, inverting the direction, and choosing a new random direction.
+    /// If we hit the bounds, invert the direction so we start coming back into the bounds, and wait half a second before finding another value so that we don't get stuck on the outer rim
+    /// </summary>
+    private bool _boundsRebounding = false;
+
+    //Just used for debugging
+    public Vector2 BottomLeft;
+    public Vector2 TopLeft;
+    public Vector2 TopRight;
+    public Vector2 BottomRight;
+
+    private Vector2 _targetPosition;
 
     /// <summary>
     /// State of the object.
@@ -169,46 +192,138 @@ public class BaddieBoss : LifeformBase {
         if (_armGraphics == null) {
             throw new MissingMemberException();
         }
+
+        _baddieBossOrigin = GameObject.FindGameObjectWithTag("BADDIEBOSSORIGIN").transform;
+        if(_baddieBossOrigin == null) {
+            Debug.LogError("Could not find a BaddieBossOrigin game object within the scene");
+            //In order for the boss to know where/how to move it NEEDS a point of origin
+            throw new NullReferenceException();
+        }
+        SetExistenceBounds();
+        SetQuadrants();
+        //Just for now center the baddie on the origin - then hard code them to the top bounds so they begin idle movement
+        //transform.position = _baddieBossOrigin.position;
+         //transform.position = new Vector3(_baddieBossOrigin.position.x, Bounds.Top, _baddieBossOrigin.position.z);
+
+    }
+
+    /// <summary>
+    /// Calculate the 4 planes for which the baddie can never exceed
+    /// The origin is passed in though so the same method and bounds logic can be used for its idle floaty animation as well as its movement
+    /// </summary>
+    private void SetExistenceBounds() {
+        _origin = _baddieBossOrigin.position;
+        Bounds.Top = _origin.y + _floatReach.y;
+        Bounds.Bottom = _origin.y - _floatReach.y;
+        Bounds.Left = _origin.x - _floatReach.x;
+        Bounds.Right = _origin.x + _floatReach.x;
+    }
+
+    /// <summary>
+    /// Calculate the 4 planes for which the baddie can never exceed
+    /// The origin is passed in though so the same method and bounds logic can be used for its idle floaty animation as well as its movement
+    /// </summary>
+    private void SetQuadrants() {
+        Quads.ResetQuadrants();
+        Quads.NW = new Vector2[] { new Vector2(Bounds.Left, _origin.y), new Vector2(_origin.x, Bounds.Top) };
+        Quads.NE = new Vector2[] { new Vector2(_origin.x, _origin.y), new Vector2(Bounds.Right, Bounds.Top) };
+        Quads.SW = new Vector2[] { new Vector2(Bounds.Left, Bounds.Bottom), new Vector2(_origin.x, _origin.y) };
+        Quads.SE = new Vector2[] { new Vector2(_origin.x, Bounds.Bottom), new Vector2(Bounds.Right, _origin.y) };
+    }
+
+    /// <summary>
+    /// Calculate the 4 corners for drawing debug square
+    /// </summary>
+    private void CalculateCorners() {
+        BottomLeft = new Vector2(Bounds.Left, Bounds.Bottom);
+        TopLeft = new Vector2(Bounds.Left, Bounds.Top);
+        TopRight = new Vector2(Bounds.Right, Bounds.Top);
+        BottomRight = new Vector2(Bounds.Right, Bounds.Bottom);
     }
 
     void Update() {
-        //Do not accumulate gravity if colliding with anythig vertical
-        //if (Controller.Collisions.FromBelow || Controller.Collisions.FromAbove) {
-        //    Velocity.y = 0;
-        //}
-        //CalculateVelocity();//This is going to be different than state since its a boss battle, the boss is never not going to be attacking...
-       // Controller.Move(Velocity * Time.deltaTime);
+        CalculateCorners();
+        Debug.DrawRay(BottomLeft, Vector2.up * Vector2.Distance(BottomLeft, BottomRight), Color.green);
+        Debug.DrawRay(TopLeft, Vector2.right * Vector2.Distance(TopLeft, TopRight), Color.green);
+        Debug.DrawRay(TopRight, Vector2.down * Vector2.Distance(TopRight, BottomRight), Color.green);
+        Debug.DrawRay(BottomRight, Vector2.left * Vector2.Distance(BottomRight, BottomLeft), Color.green);
+        CalculateVelocity();
+        var step = MoveSpeed * Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, _targetPosition, step);
+        if (Quads.CURRENT_INT != -1) {
+            UpdateQuadCurrentlyIn();
+        }
+    }
+
+
+    private void UpdateQuadCurrentlyIn() {
+        if (transform.position.x <= _origin.x) {//Must be NW, SW
+            if (transform.position.y <= _origin.y) {//SW
+                Quads.CURRENT_INT = Quads.SW_INT;
+            } else {//NW
+                Quads.CURRENT_INT = Quads.NW_INT;
+            }
+        } else {//Must be NE, SE
+            if (transform.position.y <= _origin.y) {//SE
+                Quads.CURRENT_INT = Quads.SE_INT;
+            } else {//NE
+                Quads.CURRENT_INT = Quads.NE_INT;
+            }
+        }
+        print("Updating what quad we are currently in to: " + Quads.CURRENT_INT);
+    }
+
+    private Vector2 CalculateNewPosition() {
+        //If no quad is set then recalculate which one we're in
+        if (Quads.CURRENT_INT == -1) {
+            UpdateQuadCurrentlyIn();
+        }
+        Vector2 randBoundsMin = Vector2.zero;
+        Vector2 randBoundsMax = Vector2.zero;
+
+        //0 - NE, 1 - NW, 2 - SW, 3 - SE
+
+        var index = -1;
+        do{
+            index = UnityEngine.Random.Range(0, 4);
+        }while (index == Quads.CURRENT_INT);
+        print("New index = " + index + " and currentINT = " +  Quads.CURRENT_INT);
+        if (index == Quads.NE_INT) {
+            randBoundsMin = Quads.NE[0];
+            randBoundsMax = Quads.NE[1];
+        } else if (index == Quads.NW_INT) {
+            randBoundsMin = Quads.NW[0];
+            randBoundsMax = Quads.NW[1];
+            print("Min = " + randBoundsMin + "   and max = " + randBoundsMax);
+        } else if (index == Quads.SW_INT) {
+            randBoundsMin = Quads.SW[0];
+            randBoundsMax = Quads.SW[1];
+        } else if (index == Quads.SE_INT) {
+            randBoundsMin = Quads.SE[0];
+            randBoundsMax = Quads.SE[1];
+        } else {
+            throw new Exception();
+        }
+        Quads.NEXT_INT = index;
+        var randX = UnityEngine.Random.Range(randBoundsMin.x, randBoundsMax.x);
+        var randY = UnityEngine.Random.Range(randBoundsMin.y, randBoundsMax.y);
+        print("RandX = " + randX + "   and randY = " + randY);
+        return new Vector2(randX, randY);
     }
 
     /// <summary>
     /// Calculate how the boss should be moving
     /// </summary>
     private void CalculateVelocity() {
-        //has an "idle" while not currently moving
-        //Moves to different points in the world
-        //Shoots on some sort of interval - atm
         //Calculate random strafing
         //Based off random value - change to go right or left 
         //Only strafe on an interval instead of every frame. Makes it look more realistic
-        if (Time.time > _timeToStrafe) {
-            var rand = UnityEngine.Random.Range(-10, 10f) * Time.deltaTime;
-
-            Vector2 strafeVelocity = Vector2.right * Mathf.Sign(rand);
-            _timeToStrafe = Time.time + 3 / StrafeRate;
-
-            _currentStrafeVelocity = strafeVelocity.x * MoveSpeed;
-            Velocity.x = Mathf.SmoothDamp(Velocity.x, _currentStrafeVelocity, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
-        } else {
-            Velocity.x = Mathf.SmoothDamp(Velocity.x, _currentStrafeVelocity, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
-        }
-
-        //Check if any nearby bullets
-        //chance to jump out of the way
-        if (BulletWithinRange() && Time.time > _timeToDodge) {
-            //If can jump out of the way via time do it
-            _timeToDodge = Time.time + 5;
-            //CalculateJumpVelocity();
-        }
+        //Only look for a new position if the time to strafe has been exceeded AND we have arrived in the desired quadrant
+        if (Time.time > _timeToStrafe && Quads.CURRENT_INT == Quads.NEXT_INT) {
+                print("Get new position");
+                _targetPosition = CalculateNewPosition();
+                _timeToStrafe = Time.time + 1.5f;
+            }
     }
 
     /// <summary>
@@ -282,5 +397,50 @@ public class BaddieBoss : LifeformBase {
     /// <param name="pickupType"></param>
     public override void ApplyPickup(PickupableEnum pickupType) {
         throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Stores 4 faces for which the companion cannot leave while idle
+    /// </summary>
+    public struct ExistenceBounds {//TODO: refactor this because both the companion and baddie boss uses this
+        public float Top, Bottom;
+        public float Left, Right;
+    }
+
+    public struct Quadrants {
+        public int NW_INT, NE_INT, SW_INT, SE_INT;
+        public int CURRENT_INT, NEXT_INT;
+        //Index 0 being the minX, minY
+        //Index 1 being the maxX, maxY
+        public Vector2[] NW, NE, SW, SE;
+
+        public void ResetQuadrants() {
+            CURRENT_INT = -1; NEXT_INT = -1;  NW_INT = 0;  NE_INT = 1; SW_INT = 2; SE_INT = 3;
+            NW = new Vector2[]{ Vector2.zero, Vector2.zero};
+            NE = new Vector2[] { Vector2.zero, Vector2.zero };
+            SW = new Vector2[] { Vector2.zero, Vector2.zero };
+            SE = new Vector2[] { Vector2.zero, Vector2.zero };
+        }
+    }
+
+    /// <summary>
+    /// Move the object in an Oscilating motion to simulate floating
+    /// </summary>
+    private void Idle() {
+        float targetVelocityY = Gravity * _idleMoveSpeed;
+        Velocity.y = Mathf.SmoothDamp(Velocity.y, targetVelocityY, ref VelocityYSmoothing, 0.2f);
+        transform.Translate(Velocity * Time.deltaTime);
+        VerticalBoundsCheck();
+    }
+
+    /// <summary>
+    /// Determine if the object should be floating up or down
+    /// </summary>
+    private void VerticalBoundsCheck() {
+        if (transform.position.y <= Bounds.Bottom) {
+            Gravity = 2f;
+        } else if (transform.position.y >= Bounds.Top) {
+            Gravity = -2f;
+        }
     }
 }

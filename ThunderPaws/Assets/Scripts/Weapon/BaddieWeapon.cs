@@ -54,6 +54,7 @@ public class BaddieWeapon : AbstractWeapon {
     /// Fire a projectile
     /// </summary>
     private void Shoot() {
+        print("FIRE!!!!!");
         //Store mouse position (B)
         Vector2 targetPosition = new Vector2(AttackTarget.position.x, AttackTarget.position.y /*+ GetShotMutator()*/);
         //Store bullet origin spawn popint (A)
