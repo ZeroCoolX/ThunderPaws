@@ -61,7 +61,6 @@ public class Baddie : LifeformBase {
     /// </summary>
     private Transform _wanderGraphics;
 
-
     /// <summary>
     /// Amount to shake camera by
     /// </summary>

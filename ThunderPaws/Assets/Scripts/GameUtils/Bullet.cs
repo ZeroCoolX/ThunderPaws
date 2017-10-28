@@ -71,13 +71,18 @@ public class Bullet : BulletBase {
                 break;
             case "BADDIE":
                 Debug.Log("We hit " + hitObject.name + " and did " + Damage + " damage");
-                Baddie baddie = hitObject.GetComponent<Baddie>();
-                if (baddie != null) {
-                    //Naturally someone would realize they're being attacked if they were shot so retaliate
-                    if(baddie.State != MentalStateEnum.ATTACK) {
-                        baddie.State = MentalStateEnum.ATTACK;
+                if(hitObject.GetComponent<Baddie>() != null) {
+                    Baddie baddie = hitObject.GetComponent<Baddie>();
+                    if (baddie != null) {
+                        //Naturally someone would realize they're being attacked if they were shot so retaliate
+                        if (baddie.State != MentalStateEnum.ATTACK) {
+                            baddie.State = MentalStateEnum.ATTACK;
+                        }
+                        baddie.DamageHealth(Damage);
                     }
-                    baddie.DamageHealth(Damage);
+                }else if(hitObject.GetComponent<BaddieBoss>() != null) {
+                    BaddieBoss boss = hitObject.GetComponent<BaddieBoss>();
+                    boss.DamageHealth(Damage);
                 }
                 break;
         }

@@ -33,7 +33,7 @@ public class HomingBullet : BulletBase {
 
     private void Start() {
         base.Start();
-        Target = GameObject.FindGameObjectWithTag("BADDIE").transform;
+        Target = GameObject.FindGameObjectWithTag("Player").transform;
         _freeFlyTime = Time.time + 0.5f;
     }
 

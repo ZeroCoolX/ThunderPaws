@@ -65,7 +65,7 @@ public abstract class LifeformBase : MonoBehaviour {
     /// <param name="timeToJumpApex"></param>
     /// <param name="accelerationTimeAirborne"></param>
     /// <param name="accelerationTimeGrounded"></param>
-    protected void InitializePhysicsValues(float moveSpeed, float maxJumpHeight, float minJumpHeight, float timeToJumpApex, float accelerationTimeAirborne, float accelerationTimeGrounded, float gravity = 0) {
+    protected void InitializePhysicsValues(float moveSpeed, float maxJumpHeight, float minJumpHeight, float timeToJumpApex, float accelerationTimeAirborne, float accelerationTimeGrounded, float gravity = -1) {
         MoveSpeed = moveSpeed;
         MinJumpHeight = minJumpHeight;
         MaxJumpHeight = maxJumpHeight;
@@ -75,7 +75,7 @@ public abstract class LifeformBase : MonoBehaviour {
         //Phsyics controller used for all collision detection
         Controller = GetComponent<CollisionController2D>();
         //Calculate gravity and jump velocity
-        if (gravity == 0) {
+        if (gravity == -1) {
             Gravity = -(2 * MaxJumpHeight) / Mathf.Pow(TimeToJumpApex, 2);
         }else {
             Gravity = gravity;
