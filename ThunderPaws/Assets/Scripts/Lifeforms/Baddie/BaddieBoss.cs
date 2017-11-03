@@ -338,9 +338,9 @@ public class BaddieBoss : LifeformBase {
             pickupable.GetComponent<Pickupable>().TargetName = "Player";
             pickupable.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[PickupableEnum.BAZOOKA];
             pickupable.GetComponent<Pickupable>().Pickup = PickupableEnum.BAZOOKA;
-
-            PortalFinish.gameObject.SetActive(true);
-
+            if (PortalFinish != null) {
+                PortalFinish.gameObject.SetActive(true);
+            }
             //Drop the Bazooka!
             Destroy(gameObject);
             //GameMaster.KillBaddie(this);//TODO: should take in lifeform
