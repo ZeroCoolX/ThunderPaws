@@ -9,6 +9,10 @@ public class FollowBase : MonoBehaviour {
     /// </summary>
     public Transform Target;
     /// <summary>
+    /// Need to tell if the player is running in the opposite direction its facing and I didn't want to reduplicate the code
+    /// </summary>
+    public Player PlayerScript;
+    /// <summary>
     /// Buffer for position dampeneing so movment is not sudden and jerky
     /// </summary>
     protected float Dampening = 0.5f;
@@ -28,6 +32,10 @@ public class FollowBase : MonoBehaviour {
     protected float YPosClamp = -88;
 
     protected float OffsetZ;
+    /// <summary>
+    /// Indicates offset from the moddle based on facing/moving direction
+    /// </summary>
+    protected float OffsetX = 0.25f;
     protected Vector3 LastTargetPosition;
     protected Vector3 CurrentVelocity;
     protected Vector3 LookAheadPos;
@@ -42,6 +50,10 @@ public class FollowBase : MonoBehaviour {
     }
 
     protected void Start() {
+        var playerScript = Target.GetComponent<Player>();
+        if (playerScript != null) {
+            PlayerScript = playerScript;
+        }
         LastTargetPosition = Target.position;
         OffsetZ = (transform.position - Target.position).z;
         transform.parent = null;
@@ -52,6 +64,10 @@ public class FollowBase : MonoBehaviour {
             GameObject searchResult = GameObject.FindGameObjectWithTag(_searchName);
             if (searchResult != null) {
                 Target = searchResult.transform;
+                var playerScript = Target.GetComponent<Player>();
+                if(playerScript != null) {
+                    PlayerScript = playerScript;
+                }
                 nextTimeToSearch = Time.time + searchDelay;
             }
         }

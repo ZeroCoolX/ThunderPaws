@@ -72,7 +72,7 @@ public class Player : LifeformBase {
     /// <summary>
     /// Indicates player is facing right
     /// </summary>
-    private bool _facingRight = true;
+    public bool FacingRight = true;
     /// <summary>
     /// Indicates the arm sprite is right side up
     /// </summary>
@@ -282,13 +282,13 @@ public class Player : LifeformBase {
         diff.Normalize();
         //Find the angle in degrees
         float rotZ = Mathf.Abs(Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg);
-        if ((rotZ <= 90f) && !_facingRight) {
+        if ((rotZ <= 90f) && !FacingRight) {
             //Face right
             Flip();
             if (!_rightSideUp) {
                 InvertArm();
             }
-        } else if ((rotZ > 90f) && _facingRight) {
+        } else if ((rotZ > 90f) && FacingRight) {
             //Face left
             Flip();
             if (_rightSideUp) {
@@ -304,7 +304,7 @@ public class Player : LifeformBase {
     /// </summary>
     private void Flip() {
         // Switch the way the player is labelled as facing.
-        _facingRight = !_facingRight;
+        FacingRight = !FacingRight;
 
         // Multiply the player's x local scale by -1.
         Vector3 theScale = PlayerGraphics.localScale;
@@ -318,7 +318,7 @@ public class Player : LifeformBase {
     /// </summary>
     private void FlipCompanionAnchorDelayed() {
         Vector3 newPos = CompanionAnchor.position;
-        float newX = newPos.x + (2 * _companionFlipOffset * (_facingRight ? -1f : 1f));
+        float newX = newPos.x + (2 * _companionFlipOffset * (FacingRight ? -1f : 1f));
         newPos.x = newX;
         CompanionAnchor.position = newPos;
     }
