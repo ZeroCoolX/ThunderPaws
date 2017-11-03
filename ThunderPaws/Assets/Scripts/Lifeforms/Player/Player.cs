@@ -146,8 +146,14 @@ public class Player : LifeformBase {
         }
 
         //Add default starting weapon to the collection of owned weapons
-        _ownedWeapons = new List<WeaponEnum>();
-        _ownedWeapons.Add(WeaponEnum.PISTOL);
+        if (GameMaster.Instance.OwnedWeapons == null) {
+            GameMaster.Instance.OwnedWeapons = new List<WeaponEnum>();
+            GameMaster.Instance.OwnedWeapons.Add(WeaponEnum.PISTOL);
+            _ownedWeapons = GameMaster.Instance.OwnedWeapons;
+
+        } else {
+            _ownedWeapons = GameMaster.Instance.OwnedWeapons;
+        }
         //Set default weapon (Pistol) and Add weapon switching logic to GameMaster delegate
         SelectWeapon(GameMaster.Instance.WeaponChoice);
         //Add the weapon switch method onto the weaponSwitch delegate
@@ -369,10 +375,12 @@ public class Player : LifeformBase {
                 MakeWalletTransaction(50);
                 break;
             case PickupableEnum.MACHINE_GUN:
-                _ownedWeapons.Add(WeaponEnum.MACHINE_GUN);
+                GameMaster.Instance.OwnedWeapons.Add(WeaponEnum.MACHINE_GUN);
+                _ownedWeapons = GameMaster.Instance.OwnedWeapons;
                 break;
             case PickupableEnum.BAZOOKA:
-                _ownedWeapons.Add(WeaponEnum.BAZOOKA);
+                GameMaster.Instance.OwnedWeapons.Add(WeaponEnum.BAZOOKA);
+                _ownedWeapons = GameMaster.Instance.OwnedWeapons;
                 break;
             case PickupableEnum.COMPANION:
                 CreateCompanion();

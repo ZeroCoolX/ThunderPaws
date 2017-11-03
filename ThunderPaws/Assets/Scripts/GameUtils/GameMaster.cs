@@ -34,6 +34,12 @@ public class GameMaster : MonoBehaviour {
     public WeaponEnum WeaponChoice { get { return _weaponChoice; } set { _weaponChoice = value; } }
 
     /// <summary>
+    /// List of owned weapons that have either been picked up, purchased, or default by the player.
+    /// It must live on this persistent object because when they die - we can't just reset all their weapons
+    /// </summary>
+    public List<WeaponEnum> OwnedWeapons { get; set; }
+
+    /// <summary>
     /// Max lives per game
     /// </summary>
     [Header("Health Data")]
@@ -130,6 +136,10 @@ public class GameMaster : MonoBehaviour {
             WeaponChoice = WeaponEnum.BAZOOKA;
             OnWeaponSwitch.Invoke(WeaponChoice);
         }
+    }
+
+    public void AddWeaponToOwned(WeaponEnum addition) {
+        OwnedWeapons.Add(addition);
     }
 
     /// <summary>
