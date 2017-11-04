@@ -14,13 +14,13 @@ public class Baddie : LifeformBase {
     /// </summary>
     public Transform DeathParticles;
     /// <summary>
-    /// Health object that drops when baddie dies
+    /// Pickupable object that drops when baddie dies
     /// </summary>
-    public Transform HealthDrop;
+    public Transform PickupableDrop;
     /// <summary>
-    /// Amount of health to drop on death
+    /// Amount of the object to drop on death
     /// </summary>
-    public int HealthDropAmount = 10;
+    public int PickupableDropAmount = 10;
 
     /// <summary>
     /// Layermask to indicate what object this needs to dodge
@@ -153,9 +153,7 @@ public class Baddie : LifeformBase {
             Debug.LogError("No death particles found");
             throw new UnassignedReferenceException();
         }
-        //Set the sprite renderer we need for our health drop because it is not set at compile time
-        HealthDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[PickupableEnum.HEALTH];
-        HealthDrop.GetComponent<Pickupable>().Pickup = PickupableEnum.HEALTH;
+        GeneratePickupable();
 
         _graphics = transform.FindChild("Graphics");
         if(_graphics == null) {
@@ -217,6 +215,15 @@ public class Baddie : LifeformBase {
         }
     }
 
+    private void GeneratePickupable() {
+        //Set the sprite renderer we need for our pickupable drop because it is not set at compile time
+        int pickup = UnityEngine.Random.Range(0, 2);
+        PickupableEnum pickupEnum = pickup == 0 ? PickupableEnum.HEALTH : PickupableEnum.CURRENCY;
+        print("pickupable = " + pickupEnum);
+        PickupableDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[pickupEnum];
+        PickupableDrop.GetComponent<Pickupable>().Pickup = pickupEnum;
+    }
+
     /// <summary>
     /// Check the stats to see if we need to destroy the object
     /// </summary>
@@ -224,7 +231,7 @@ public class Baddie : LifeformBase {
         //Kill the baddie
         if (_stats.CurHealth <= 0) {
             //Drop Health
-            var pickupable = Instantiate(HealthDrop, transform.position, transform.rotation) as Transform;
+            var pickupable = Instantiate(PickupableDrop, transform.position, transform.rotation) as Transform;
             pickupable.GetComponent<Pickupable>().TargetName = "Player";
             GameMaster.KillBaddie(this);
         } else {

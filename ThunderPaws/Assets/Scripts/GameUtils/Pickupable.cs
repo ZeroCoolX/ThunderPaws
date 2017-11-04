@@ -65,7 +65,7 @@ public class Pickupable : MonoBehaviour {
             transform.Translate(Vector2.down * Mathf.SmoothDamp(_velocity.y, newVelocity, ref _currentVelocity, 0.25f));
 
             var obstacleLayer = 1 << 10;
-            RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Vector2.down, 0.25f, obstacleLayer);
+            RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Vector2.down, 0.5f, obstacleLayer);
             if (distCheck.collider != null) {
                 _hasLanded = true;
                 _velocity.y = 0;
