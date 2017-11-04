@@ -350,7 +350,7 @@ public class Baddie : LifeformBase {
         //Based off random value - change to go right or left 
         //Only strafe on an interval instead of every frame. Makes it look more realistic
         if (Time.time > _timeToStrafe) {
-            var rand = UnityEngine.Random.Range(-10, 10f) * Time.deltaTime;
+            var rand = UnityEngine.Random.Range(-7f, 7f) * Time.deltaTime;
 
             Vector2 strafeVelocity = Vector2.right * Mathf.Sign(rand);
             _timeToStrafe = Time.time + 3 / StrafeRate;

@@ -22,11 +22,11 @@ public class BaddieAIController : BaddieBaseAIController {
     /// Max distance the target can be away from this and still be noticed
     /// This changes if this is attacking though and the target is still within less than _noticeThreshold away
     /// </summary>
-    private float _noticeThreshold = 15f;
+    private float _noticeThreshold = 20f;
     /// <summary>
     /// Max distance the target can be away from this and still be attacked
     /// </summary>
-    private float _attackThreshold = 13f;
+    private float _attackThreshold = 17f;
     /// <summary>
     /// If the target gets within this distance the object will retreat to a further safer distance
     /// </summary>

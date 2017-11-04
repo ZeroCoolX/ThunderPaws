@@ -138,10 +138,6 @@ public class GameMaster : MonoBehaviour {
         }
     }
 
-    public void AddWeaponToOwned(WeaponEnum addition) {
-        OwnedWeapons.Add(addition);
-    }
-
     /// <summary>
     /// Genreate death particles, shake camera, destroy baddie game object
     /// </summary>
