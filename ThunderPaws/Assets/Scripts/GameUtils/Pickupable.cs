@@ -20,6 +20,22 @@ public class Pickupable : MonoBehaviour {
     /// The name of the tag of the object we want to be picked up by
     /// </summary>
     public string TargetName;
+    /// <summary>
+    /// Indicates that the pickupable has landed on some OBSTACLE surface
+    /// </summary>
+    private bool _hasLanded = false;
+    /// <summary>
+    /// Used for applying gravity in case it was spawned in the air
+    /// </summary>
+    private Vector2 _velocity = Vector2.zero;
+    /// <summary>
+    /// Gravity only used to make pickupoables drop to the ground
+    /// </summary>
+    private float _gravity = 50f;
+    /// <summary>
+    /// Just used as a reference for the smoothDamp function
+    /// </summary>
+    private float _currentVelocity;
 
     private void Start() {
         //Placeholder right now till I figure out how I really want to do pickups
@@ -36,13 +52,29 @@ public class Pickupable : MonoBehaviour {
             RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, Target.position - transform.position);
             if (possibleHit.collider != null) {
                 //TODO: change the distance of the ray we draw to be relative to the pickup size
-                RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Target.position - transform.position, 0.75f, WhatToHit);
+                var playerLayer = 1 << 8;
+                RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Target.position - transform.position, 0.75f, playerLayer);
                 if (distCheck.collider != null) {
                     ApplyPickup(distCheck.collider);
-                    return;
                 }
             }
         }
+        if (!_hasLanded) {
+            print("apply grav");
+            var newVelocity = ApplyGravity();
+            transform.Translate(Vector2.down * Mathf.SmoothDamp(_velocity.y, newVelocity, ref _currentVelocity, 0.25f));
+
+            var obstacleLayer = 1 << 10;
+            RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Vector2.down, 0.25f, obstacleLayer);
+            if (distCheck.collider != null) {
+                _hasLanded = true;
+                _velocity.y = 0;
+            }
+        }
+    }
+
+    private float ApplyGravity() {
+        return (_velocity.y + _gravity * Time.deltaTime);
     }
 
     public void ApplyPickup(Collider2D hitObject) {
@@ -55,7 +87,6 @@ public class Pickupable : MonoBehaviour {
                 }
                 break;
         }
-
         //TODO: Add particles to pickup
         //Mask it so when we hit something the particles shoot OUT from it.
         //Transform hitParticles = Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, _targetNormal)) as Transform;
