@@ -35,8 +35,16 @@ public class Weapon : AbstractWeapon {
             if (Input.GetButtonDown("Fire1")) {
                 Shoot();
             }
-        } else {//Automatic fire
-            if(Input.GetButton("Fire1") && Time.time > _timeToFire) {
+        } else if(IsBurst) {
+            if (Input.GetButtonDown("Fire1") && Time.time > _timeToFire) {
+                //Update time to fire
+                _timeToFire = Time.time + FireDelay / FireRate;
+                Invoke("Shoot", 0f);
+                Invoke("Shoot", 0.025f);
+                Invoke("Shoot", 0.05f);
+            }
+        } else {//Automatic fire is currently deprecated since its way too OP
+            if (Input.GetButton("Fire1") && Time.time > _timeToFire) {
                 //Update time to fire
                 _timeToFire = Time.time + FireDelay / FireRate;
                 Shoot();
@@ -56,7 +64,7 @@ public class Weapon : AbstractWeapon {
         RaycastHit2D shot = Physics2D.Raycast(firePointPosition, mousePosition - firePointPosition, 100, WhatToHit);
 
         //Generate bullet effect
-        if (Time.time >= TimeToSpawnEffect) {
+        if (IsBurst || Time.time >= TimeToSpawnEffect) {
             //Bullet effect position data
             Vector3 hitPosition;
             Vector3 hitNormal;

@@ -52,6 +52,10 @@ public abstract class AbstractWeapon : MonoBehaviour {
     /// Delay between firing
     /// </summary>
     public float _timeToFire = 0f;
+    /// <summary>
+    /// Indicates whether the fire mode should be burst
+    /// </summary>
+    public bool IsBurst = false;
 
     protected void Start () {
         if (FirePoint == null) {
