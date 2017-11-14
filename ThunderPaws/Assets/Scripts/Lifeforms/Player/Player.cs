@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets._2D;
-using InControl;
 
 [RequireComponent(typeof(CollisionController2D))]
 public class Player : LifeformBase {
@@ -89,10 +88,6 @@ public class Player : LifeformBase {
     /// </summary>
     public Vector2 DirectionalInput;
     /// <summary>
-    /// This will be set if a gamepad is in use
-    /// </summary>
-    public InputDevice Gamepad { get; private set; }
-    /// <summary>
     /// Indicates the player shot down and hit the trigger and if they jump within 0.25seconds of hitting the trigger they will receive a massive jump boost
     /// </summary>
     private bool _rocketJumpInitiated = false;
@@ -118,15 +113,15 @@ public class Player : LifeformBase {
             throw new UnassignedReferenceException();
         }
         Animator = GetComponent<Animator>();
-        if(Animator == null) {
+        if (Animator == null) {
             Debug.LogError("No Animator on player found");
             throw new MissingComponentException();
         }
         CompanionAnchor = transform.FindChild("CompanionOrigin");
-        if(CompanionAnchor == null) {
+        if (CompanionAnchor == null) {
             //This might be okay because they won't always have a companion
             Debug.Log("CompanionOrigin was null");
-        }else {
+        } else {
             CalculateCompanionFlipOffset();
         }
 
@@ -138,14 +133,14 @@ public class Player : LifeformBase {
         _stats.CurHealth = _stats.MaxHealth;
 
         //Validate StatusIndicator
-        if(_statusIndicator == null) {
+        if (_statusIndicator == null) {
             Debug.LogError("No status indicator found");
             throw new UnassignedReferenceException();
         }
         _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
 
         //Validate DeathParticles
-        if(DeathParticles == null) {
+        if (DeathParticles == null) {
             Debug.LogError("No player death particles found");
             throw new UnassignedReferenceException();
         }
@@ -199,9 +194,8 @@ public class Player : LifeformBase {
     /// Store the player input 
     /// </summary>
     /// <param name="input"></param>
-    public void SetDirectionalInput(Vector2 input, InputDevice gamepad = null) {
+    public void SetDirectionalInput(Vector2 input) {
         DirectionalInput = input;
-        Gamepad = gamepad;
     }
 
     /// <summary>
@@ -209,22 +203,12 @@ public class Player : LifeformBase {
     /// </summary>
     private void CalculateVelocityOffInput() {
         //check if user - or NPC - is trying to jump and is standing on the ground
-        if (CheckForJump() && Controller.Collisions.FromBelow) {
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && Controller.Collisions.FromBelow) {
             //If they're trying to rocket jump...LET THEM
             Velocity.y = MaxJumpVelocity + (_rocketJumpInitiated ? _rocketJumpBoost : 0f);
         }
         float targetVelocityX = DirectionalInput.x * MoveSpeed;
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
-    }
-
-    private bool CheckForJump() {
-        if(Gamepad != null) {
-            print("jump with gaamepad");
-            return Gamepad.Action1.IsPressed;
-        }else {
-            print("jump with kb/m");
-            return (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W));
-        }
     }
 
     /// <summary>
@@ -260,9 +244,9 @@ public class Player : LifeformBase {
     /// Check health and kill if necessary
     /// </summary>
     private void LifeCheck() {
-        if(_stats.CurHealth <= 0) {
+        if (_stats.CurHealth <= 0) {
             GameMaster.KillPlayer(this);
-        }else {
+        } else {
             //TODO: audio
         }
     }
@@ -274,11 +258,11 @@ public class Player : LifeformBase {
     /// <param name="dmg"></param>
     public void DamageHealth(int dmg) {
         _stats.CurHealth -= dmg;
-        if(_statusIndicator != null) {
+        if (_statusIndicator != null) {
             _statusIndicator.SetHealth(_stats.CurHealth, _stats.MaxHealth);
         }
         LifeCheck();
-    } 
+    }
 
     public void MakeWalletTransaction(int amount) {
         _stats.NipAmount += amount;
