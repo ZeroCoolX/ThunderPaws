@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using InControl;
 
 public class Weapon : AbstractWeapon {
     /// <summary>
@@ -20,6 +21,10 @@ public class Weapon : AbstractWeapon {
     /// LayuerMask indicating what to hit
     /// </summary>
     public LayerMask WhatToHit;
+    /// <summary>
+    /// Need a reference to the parent player to get the input from a possible controller
+    /// </summary>
+    private Player _parentPlayer;
 
     protected void Start() {
         base.Start();
@@ -28,15 +33,19 @@ public class Weapon : AbstractWeapon {
             Debug.LogError("Weapon.cs: No CameraShake found on game master");
             throw new MissingComponentException();
         }
+        _parentPlayer = transform.parent.parent.GetComponent<Player>();
+        if(_parentPlayer == null) {
+            throw new MissingComponentException();
+        }
     }
 
     private void Update() {
-         if (FireRate == 0) {//Single fire
-            if (Input.GetButtonDown("Fire1")) {
+        if (FireRate == 0) {//Single fire
+            if (IsFire(true)) {
                 Shoot();
             }
-        } else if(IsBurst) {
-            if (Input.GetButtonDown("Fire1") && Time.time > _timeToFire) {
+        } else if (IsBurst) {
+            if (IsFire(true) && Time.time > _timeToFire) {
                 //Update time to fire
                 _timeToFire = Time.time + FireDelay / FireRate;
                 Invoke("Shoot", 0f);
@@ -44,10 +53,26 @@ public class Weapon : AbstractWeapon {
                 Invoke("Shoot", 0.05f);
             }
         } else {//Automatic fire is currently deprecated since its way too OP
-            if (Input.GetButton("Fire1") && Time.time > _timeToFire) {
+            if (IsFire(false) && Time.time > _timeToFire) {
                 //Update time to fire
                 _timeToFire = Time.time + FireDelay / FireRate;
                 Shoot();
+            }
+        }
+    }
+
+    private bool IsFire(bool down) {
+        if(_parentPlayer.Gamepad != null && _parentPlayer.Gamepad != InputDevice.Null) {
+            if (down) {
+                return _parentPlayer.Gamepad.RightTrigger.WasPressed;
+            } else {
+                return _parentPlayer.Gamepad.RightTrigger.IsPressed;
+            }
+        } else {
+            if (down) {
+                return Input.GetButtonDown("Fire1");
+            } else {
+                return Input.GetButton("Fire1");
             }
         }
     }

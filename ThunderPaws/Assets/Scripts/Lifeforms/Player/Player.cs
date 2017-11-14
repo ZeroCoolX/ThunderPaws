@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets._2D;
+using InControl;
 
 [RequireComponent(typeof(CollisionController2D))]
 public class Player : LifeformBase {
@@ -87,6 +88,10 @@ public class Player : LifeformBase {
     /// Input supplied from user input
     /// </summary>
     public Vector2 DirectionalInput;
+    /// <summary>
+    /// This will be set if a gamepad is in use
+    /// </summary>
+    public InputDevice Gamepad { get; private set; }
     /// <summary>
     /// Indicates the player shot down and hit the trigger and if they jump within 0.25seconds of hitting the trigger they will receive a massive jump boost
     /// </summary>
@@ -194,8 +199,9 @@ public class Player : LifeformBase {
     /// Store the player input 
     /// </summary>
     /// <param name="input"></param>
-    public void SetDirectionalInput(Vector2 input) {
+    public void SetDirectionalInput(Vector2 input, InputDevice gamepad = null) {
         DirectionalInput = input;
+        Gamepad = gamepad;
     }
 
     /// <summary>
@@ -203,12 +209,22 @@ public class Player : LifeformBase {
     /// </summary>
     private void CalculateVelocityOffInput() {
         //check if user - or NPC - is trying to jump and is standing on the ground
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && Controller.Collisions.FromBelow) {
+        if (CheckForJump() && Controller.Collisions.FromBelow) {
             //If they're trying to rocket jump...LET THEM
             Velocity.y = MaxJumpVelocity + (_rocketJumpInitiated ? _rocketJumpBoost : 0f);
         }
         float targetVelocityX = DirectionalInput.x * MoveSpeed;
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
+    }
+
+    private bool CheckForJump() {
+        if(Gamepad != null) {
+            print("jump with gaamepad");
+            return Gamepad.Action1.IsPressed;
+        }else {
+            print("jump with kb/m");
+            return (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W));
+        }
     }
 
     /// <summary>
