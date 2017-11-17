@@ -13,6 +13,7 @@ public class Baddie : LifeformBase {
     /// Particle reference to play on destruct
     /// </summary>
     public Transform DeathParticles;
+    public string DeathSoundName = "BaddieExplosion";
     /// <summary>
     /// Pickupable object that drops when baddie dies
     /// </summary>
@@ -116,6 +117,11 @@ public class Baddie : LifeformBase {
     /// </summary>
     public bool TargetOnLeft;
 
+    private AudioManager _audioManager;
+
+    /// <summary>
+    /// Who should this be watching for
+    /// </summary>
     public Transform Target { get; set; }
 
     /// <summary>
@@ -136,6 +142,10 @@ public class Baddie : LifeformBase {
         }
         _stats.Initialize();
 
+        _audioManager = AudioManager.instance;
+        if(_audioManager == null) {
+            throw new MissingComponentException("No AudioManager found");
+        }
 
         //Get the animator
         Animator = GetComponent<Animator>();
@@ -230,12 +240,11 @@ public class Baddie : LifeformBase {
     private void LifeCheck() {
         //Kill the baddie
         if (_stats.CurHealth <= 0) {
-            //Drop Health
+            //Drop pickupable and play sound
+            _audioManager.playSound(PickupableDropSoundName);
             var pickupable = Instantiate(PickupableDrop, transform.position, transform.rotation) as Transform;
             pickupable.GetComponent<Pickupable>().TargetName = "Player";
             GameMaster.KillBaddie(this);
-        } else {
-            //TODO: Add audio
         }
     }
 

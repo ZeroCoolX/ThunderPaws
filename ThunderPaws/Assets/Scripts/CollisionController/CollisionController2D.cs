@@ -14,6 +14,14 @@ public class CollisionController2D : RaycastController {
     /// Struct containing collision info
     /// </summary>
     public CollisionInfo Collisions;
+    /// <summary>
+    /// Sound name to play when we land
+    /// </summary>
+    public string JumpLanding = "JumpLanding";
+    /// <summary>
+    /// AudiManager reference for playing sounds
+    /// </summary>
+    private AudioManager _audioManager;
 
     /// <summary>
     /// Maximum angle upward we can traverse up
@@ -31,6 +39,10 @@ public class CollisionController2D : RaycastController {
 
     public override void Start() {
         base.Start();
+        _audioManager = AudioManager.instance;
+        if(_audioManager == null) {
+            throw new MissingComponentException("No AudioManager found");
+        }
     }
 
     public void Move(Vector3 velocity) {
@@ -48,6 +60,7 @@ public class CollisionController2D : RaycastController {
     public void Move(Vector3 velocity, Vector2 input) {
         PlayerInput = input;
         UpdateRaycasyOrigins();
+        bool wasGrounded = Collisions.FromBelow;
         Collisions.Reset();
         //Only check for descending slope if we're moving downward. 
         if (velocity.y < 0) {
@@ -58,6 +71,10 @@ public class CollisionController2D : RaycastController {
         }
         if (velocity.y != 0) {
             CalculateVerticalCollisions(ref velocity);
+        }
+        if (wasGrounded != Collisions.FromBelow && Collisions.FromBelow) {
+            print("playing landing JumpLanding sound");
+            _audioManager.playSound(JumpLanding);
         }
         //Only calculaate near ledge if we're standing on something. 
         if (velocity.x != 0 && Collisions.FromBelow) {

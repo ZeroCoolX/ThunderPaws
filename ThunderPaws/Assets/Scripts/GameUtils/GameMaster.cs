@@ -93,11 +93,23 @@ public class GameMaster : MonoBehaviour {
     /// <summary>
     /// How long to wait from player death to respawn
     /// </summary>
-    public int SpawnDelay = 2;
+    public int SpawnDelay = 3;
     /// <summary>
     /// Spawn prefab reference
     /// </summary>
     public GameObject SpawnPrefab;
+    /// <summary>
+    /// Handles playing and stopping audio
+    /// </summary>
+    private AudioManager _audioManager;
+
+    /*Sound Names*/
+    /// <summary>
+    /// Reference to the game over sound
+    /// </summary>
+    public string GameOverSoundName = "GameOver";
+    public string SpawnSoundName = "Spawn";
+    public string RespawnCountdownSoundName = "RespawnCountdown";
 
     private void Awake() {
         if(Instance == null) {
@@ -107,10 +119,15 @@ public class GameMaster : MonoBehaviour {
     }
 
     private void Start() {
-        ///Validate Camera Shake reference
+        //Validate Camera Shake reference
         if(CamShake == null) {
             Debug.LogError("GameMaster.cs: No CameraShake found");
             throw new MissingComponentException();
+        }
+
+        _audioManager = AudioManager.instance;
+        if(_audioManager == null) {
+            throw new MissingComponentException("No AudioManager was found");
         }
         //Double check that there is at least one spawn point in this level
         if(SpawnPoints.Length <= 0) {
@@ -143,7 +160,8 @@ public class GameMaster : MonoBehaviour {
     /// </summary>
     /// <param name="baddie"></param>
     public static void KillBaddie(Baddie baddie) {
-        //TODO: sound
+        Instance._audioManager.playSound(baddie.DeathSoundName);
+
         //Generate death particles
         Transform clone = Instantiate(baddie.DeathParticles, baddie.transform.position, Quaternion.identity) as Transform;
         Destroy(clone.gameObject, 3f);
@@ -188,6 +206,7 @@ public class GameMaster : MonoBehaviour {
             Instance.StartCoroutine(Instance.RespawnPlayer());
         }else {
             if (RemainingLives <= 0) {
+                _audioManager.playSound(GameOverSoundName);
                 GameOverUI.SetActive(true);
             }
         }
@@ -198,8 +217,10 @@ public class GameMaster : MonoBehaviour {
     /// </summary>
     /// <returns></returns>
     private IEnumerator RespawnPlayer() {
-        //TODO: spawn sound
+        //play sound and wait for delay
+        _audioManager.playSound(RespawnCountdownSoundName);
         yield return new WaitForSeconds(SpawnDelay);
+        _audioManager.playSound(SpawnSoundName);
         Instantiate(Player, SpawnPoints[SpawnPointIndex].position, SpawnPoints[SpawnPointIndex].rotation);
         GameObject clone = Instantiate(SpawnPrefab, SpawnPoints[SpawnPointIndex].position, SpawnPoints[SpawnPointIndex].rotation) as GameObject;
         Destroy(clone, 3f);

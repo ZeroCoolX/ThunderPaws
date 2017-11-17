@@ -95,6 +95,22 @@ public class Player : LifeformBase {
     /// Adds to jump velocity
     /// </summary>
     private float _rocketJumpBoost = 5f;
+    /// <summary>
+    /// AudioManager reference for plaaying sounds
+    /// </summary>
+    private AudioManager _audioManager;
+    /// <summary>
+    /// Sound played for damaging the player
+    /// </summary>
+    public string DamageSoundName = "GruntVoice02";
+    /// <summary>
+    /// The sound played for dying
+    /// </summary>
+    public string DeathSoundName = "DeathVoice";
+    /// <summary>
+    /// The sound played when player collects a pickup
+    /// </summary>
+    public string CollectPickupSoundName = "CollectPickup";
 
     /// <summary>
     /// Setup Player object.
@@ -143,6 +159,11 @@ public class Player : LifeformBase {
         if (DeathParticles == null) {
             Debug.LogError("No player death particles found");
             throw new UnassignedReferenceException();
+        }
+
+        _audioManager = AudioManager.instance;
+        if(_audioManager == null) {
+            throw new MissingComponentException("No AudioManager found");
         }
 
         //Add default starting weapon to the collection of owned weapons
@@ -245,9 +266,10 @@ public class Player : LifeformBase {
     /// </summary>
     private void LifeCheck() {
         if (_stats.CurHealth <= 0) {
+            _audioManager.playSound(DeathSoundName);
             GameMaster.KillPlayer(this);
         } else {
-            //TODO: audio
+            _audioManager.playSound(DamageSoundName);
         }
     }
 
@@ -366,6 +388,7 @@ public class Player : LifeformBase {
     /// </summary>
     /// <param name="pickupType"></param>
     public override void ApplyPickup(PickupableEnum pickupType) {
+        _audioManager.playSound(CollectPickupSoundName);
         switch (pickupType) {
             case PickupableEnum.HEALTH:
                 _stats.CurHealth = _stats.MaxHealth;

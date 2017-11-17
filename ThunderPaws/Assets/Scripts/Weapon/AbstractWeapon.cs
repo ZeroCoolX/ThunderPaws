@@ -28,6 +28,15 @@ public abstract class AbstractWeapon : MonoBehaviour {
     public float BulletSpeed;
 
     /// <summary>
+    /// AudioManager reference for plaaying sounds
+    /// </summary>
+    private AudioManager _audioManager;
+    /// <summary>
+    /// Sound played for damaging the player
+    /// </summary>
+    public string WeaponShootSound = "Shot";
+
+    /// <summary>
     /// Bullet graphics
     /// </summary>
     [Header("Abstract: Effects")]
@@ -61,6 +70,10 @@ public abstract class AbstractWeapon : MonoBehaviour {
         if (FirePoint == null) {
             Debug.LogError("AbstractWeapon.cs: No firePoint found");
             throw new UnassignedReferenceException();
+        }
+        _audioManager = AudioManager.instance;
+        if (_audioManager == null) {
+            throw new MissingComponentException("No AudioManager found");
         }
     }
 
@@ -98,6 +111,8 @@ public abstract class AbstractWeapon : MonoBehaviour {
         muzzleFlash.localScale = new Vector3(size, size, size);
         //Destroy muzzle flash
         Destroy(muzzleFlash.gameObject, 0.035f);
+        //Generate shot sound
+        _audioManager.playSound(WeaponShootSound);
     }
 
 }

@@ -50,6 +50,11 @@ public abstract class LifeformBase : MonoBehaviour {
     protected float VelocityXSmoothing;
 
     /// <summary>
+    /// The sound played when the lifeform drops some pickupable
+    /// </summary>
+    protected string PickupableDropSoundName = "DropPickup";
+
+    /// <summary>
     /// collision detection controller
     /// </summary>
     protected CollisionController2D Controller;
