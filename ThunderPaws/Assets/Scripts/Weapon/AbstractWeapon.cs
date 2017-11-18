@@ -83,13 +83,14 @@ public abstract class AbstractWeapon : MonoBehaviour {
     /// <param name="shotPos"></param>
     /// <param name="shotNormal"></param>
     /// <param name="whatToHit"></param>
-    public virtual void GenerateEffect(Vector3 shotPos, Vector3 shotNormal, LayerMask whatToHit, string layer) {
+    public virtual void GenerateEffect(Vector3 shotPos, Vector3 shotNormal, LayerMask whatToHit, string layer, float freeFlyDelay = 0.5f) {
         //Fire the projectile - this will travel either out of the frame or hit a target - below should instantiate and destroy immediately
         Transform bulletInstance = Instantiate(BulletTrailPrefab, FirePoint.position, FirePoint.rotation) as Transform;
         //Parent the bullet to who shot it so we know what to hit (parents LayerMask whatToHit)
         BulletBase projectile;
         if(bulletInstance.GetComponent<Bullet>() == null) {
             projectile = bulletInstance.GetComponent<HomingBullet>();
+            (projectile as HomingBullet).FreeFlyDelay = freeFlyDelay;
         }else {
             projectile = bulletInstance.GetComponent<Bullet>();
         }

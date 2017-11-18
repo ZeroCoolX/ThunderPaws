@@ -25,6 +25,11 @@ public class BaddieWeapon : AbstractWeapon {
     /// Layermask indicating what to hit
     /// </summary>
     public LayerMask WhatToHit;
+    /// <summary>
+    /// This only pertains to the homing missile.
+    /// Optional value that specifies when the missile should start tracking the player (after x seconds)
+    /// </summary>
+    public float FreeFlyTime = 0.5f;
 
     protected void Start() {
         base.Start();
@@ -56,7 +61,12 @@ public class BaddieWeapon : AbstractWeapon {
     private void Shoot() {
         print("FIRE!!!!!");
         //Store mouse position (B)
-        Vector2 targetPosition = new Vector2(AttackTarget.position.x, AttackTarget.position.y /*+ GetShotMutator()*/);
+        Vector2 targetPosition;
+        if (1 == 1) {
+            targetPosition = Vector2.up;
+        } else {
+            targetPosition = new Vector2(AttackTarget.position.x, AttackTarget.position.y /*+ GetShotMutator()*/);
+        }
         //Store bullet origin spawn popint (A)
         Vector2 firePointPosition = new Vector2(FirePoint.position.x, FirePoint.position.y);
         //Collect the hit data - distance and direction from A -> B
@@ -80,7 +90,7 @@ public class BaddieWeapon : AbstractWeapon {
             }
 
             //Actually instantiate the effect
-            GenerateEffect(hitPosition, hitNormal, WhatToHit, "BADDIEBULLET");
+            GenerateEffect(hitPosition, hitNormal, WhatToHit, "BADDIEBULLET", FreeFlyTime);
             TimeToSpawnEffect = Time.time + 1 / EffectSpawnRate;
         }
     }

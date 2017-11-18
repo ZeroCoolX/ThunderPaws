@@ -249,8 +249,11 @@ public class BaddieBoss : LifeformBase {
         Debug.DrawRay(TopRight, Vector2.down * Vector2.Distance(TopRight, BottomRight), Color.green);
         Debug.DrawRay(BottomRight, Vector2.left * Vector2.Distance(BottomRight, BottomLeft), Color.green);
         CalculateVelocity();
-        var step = MoveSpeed * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, _targetPosition, step);
+        //transform.position = Vector3.MoveTowards(transform.position, _targetPosition, step);
+        float distLength = Vector3.Distance(transform.position, _targetPosition);
+        var step = (MoveSpeed * Time.deltaTime) / distLength;
+
+        transform.position = Vector3.Lerp(transform.position, _targetPosition, step);
         if (Quads.CURRENT_INT != -1) {
             UpdateQuadCurrentlyIn();
         }

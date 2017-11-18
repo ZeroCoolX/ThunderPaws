@@ -17,7 +17,11 @@ public class HomingBullet : BulletBase {
     /// <summary>
     /// how many seconds until the rocket's "homing" logic kicks in
     /// </summary>
-    private float _freeFlyTime = 1;
+    private float _freeFlyTime;
+    /// <summary>
+    /// Rate aat which we should wait
+    /// </summary>
+    public float FreeFlyDelay = 0.5f;
 
     /// <summary>
     /// Just used as a reference for the Mathf.SmoothDamp function
@@ -34,7 +38,7 @@ public class HomingBullet : BulletBase {
     private void Start() {
         base.Start();
         Target = GameObject.FindGameObjectWithTag("Player").transform;
-        _freeFlyTime = Time.time + 0.5f;
+        _freeFlyTime = Time.time + FreeFlyDelay;
     }
 
     void Update() {
