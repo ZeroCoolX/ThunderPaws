@@ -48,7 +48,7 @@ public class Pickupable : MonoBehaviour {
         if (Target == null) {
             FindTarget(TargetName);
         } else {
-            //Raycast to check if we could potentially the target
+            //Raycast to check if we could potentially hit the target
             RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, Target.position - transform.position);
             if (possibleHit.collider != null) {
                 //TODO: change the distance of the ray we draw to be relative to the pickup size
@@ -60,21 +60,22 @@ public class Pickupable : MonoBehaviour {
             }
         }
         if (!_hasLanded) {
-            print("apply grav");
             var newVelocity = ApplyGravity();
-            transform.Translate(Vector2.down * Mathf.SmoothDamp(_velocity.y, newVelocity, ref _currentVelocity, 0.25f));
-
+            var fallSpeed = Mathf.SmoothDamp(_velocity.y, newVelocity, ref _currentVelocity, 0.25f);
+            transform.Translate(Vector2.down * fallSpeed);
             var obstacleLayer = 1 << 10;
+            float rayLength = Mathf.Abs(newVelocity);
             RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Vector2.down, 0.5f, obstacleLayer);
             if (distCheck.collider != null) {
                 _hasLanded = true;
                 _velocity.y = 0;
+                return;
             }
         }
     }
 
     private float ApplyGravity() {
-        return (_velocity.y + _gravity * Time.deltaTime);
+        return (_velocity.y + _gravity) * Mathf.Min(Time.deltaTime, 0.02f);
     }
 
     public void ApplyPickup(Collider2D hitObject) {

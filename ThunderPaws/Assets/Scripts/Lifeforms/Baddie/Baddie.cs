@@ -227,8 +227,9 @@ public class Baddie : LifeformBase {
 
     private void GeneratePickupable() {
         //Set the sprite renderer we need for our pickupable drop because it is not set at compile time
-        int pickup = UnityEngine.Random.Range(0, 2);
-        PickupableEnum pickupEnum = pickup == 0 ? PickupableEnum.HEALTH : PickupableEnum.CURRENCY;
+        //We want a ver small percent chance of it to be health otherwise its too easy
+        int pickup = UnityEngine.Random.Range(1, 12);
+        PickupableEnum pickupEnum = pickup % 3 == 0 ? PickupableEnum.HEALTH : PickupableEnum.CURRENCY;
         print("pickupable = " + pickupEnum);
         PickupableDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[pickupEnum];
         PickupableDrop.GetComponent<Pickupable>().Pickup = pickupEnum;

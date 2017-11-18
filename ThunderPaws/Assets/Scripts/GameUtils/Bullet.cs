@@ -16,7 +16,8 @@ public class Bullet : BulletBase {
         if (possibleHit.collider != null){
             //Mini raycast to check handle ellusive targets
             RaycastHit2D distCheck = Physics2D.Raycast(transform.position, TargetPos - transform.position, 0.2f, WhatToHit);
-            if (distCheck.collider != null) {
+            //We want to allow bullets to pass throught obstacles that the player can pass through
+            if (distCheck.collider != null && distCheck.collider.gameObject.tag != "OBSTACLE-THROUGH") {
                 HitTarget(transform.position, distCheck.collider);
                 //We don't want to stop the bullet trajectory if we're hitting the trigger.
                 //If we're on the ground - which is the only time the rocket jump boost can be applied, the bullet should hit the ground instead of the trigger
@@ -32,7 +33,8 @@ public class Bullet : BulletBase {
             if (dir.magnitude <= distanceThisFrame) {
                 //Make sure the player didn't dodge out of the way
                 distCheck = Physics2D.Raycast(transform.position, TargetPos - transform.position, 0.2f, WhatToHit);
-                if (distCheck.collider != null) {
+                //We want to allow bullets to pass throught obstacles that the player can pass through
+                if (distCheck.collider != null && distCheck.collider.gameObject.tag != "OBSTACLE-THROUGH") {
                     HitTarget(transform.position, distCheck.collider);
                     //We don't want to stop the bullet trajectory if we're hitting the trigger.
                     //If we're on the ground - which is the only time the rocket jump boost can be applied, the bullet should hit the ground instead of the trigger

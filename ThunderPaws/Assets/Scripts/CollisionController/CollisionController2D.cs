@@ -115,7 +115,6 @@ public class CollisionController2D : RaycastController {
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
                 //only do this for the bottom most
                 if (i == 0 && slopeAngle <= _maxClimbAngle) {
-                    print(slopeAngle);
                     //Don't start moving upward at an angle until we hit the actual slope (this fixes a teeny gap between collider and surface)
                     float distanceToSlopeStart = 0f;
                     if(slopeAngle != Collisions.SlopeAnglePrevFrame) {
