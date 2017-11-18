@@ -40,8 +40,16 @@ namespace UnityStandardAssets._2D {
                 } else {
                     _currentXOffset = OffsetX * Mathf.Sign(_currentXOffset);
                 }
+                newPos = new Vector3(newPos.x + _currentXOffset, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
+                transform.position = newPos;
+
+                LastTargetPosition = Target.position;
+            }else {
+                newPos = new Vector3(newPos.x, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
             }
-            newPos = new Vector3(newPos.x + _currentXOffset, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
+            //TODO: The camera offset to allow more space in front of the player is not great-  but manageable atm - must fix in the future
+            //newPos = new Vector3(newPos.x + _currentXOffset, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
+           // newPos = new Vector3(newPos.x, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
 
             transform.position = newPos;
 
