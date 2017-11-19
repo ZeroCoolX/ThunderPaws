@@ -39,6 +39,7 @@ public class HomingBullet : BulletBase {
         base.Start();
         Target = GameObject.FindGameObjectWithTag("Player").transform;
         _freeFlyTime = Time.time + FreeFlyDelay;
+        MaxLifetime = 30;
     }
 
     void Update() {
@@ -129,8 +130,8 @@ public class HomingBullet : BulletBase {
                     player.DamageHealth(Damage);
                 }
                 break;
-            case "ROCKETJUMPTRIGGER":
-                Debug.Log("We hit " + hitObject.name + " and rocket jumped!");
+            case "BULLET":
+                Debug.Log("We hit " + hitObject.name + " and and detonated!");
                 player = hitObject.GetComponentInParent<Player>();
                 if (player != null) {
                     player.AllowRocketJump();

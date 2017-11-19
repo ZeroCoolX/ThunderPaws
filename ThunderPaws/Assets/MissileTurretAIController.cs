@@ -15,11 +15,11 @@ public class MissileTurretAIController : MonoBehaviour {
     /// <summary>
     /// Reference to the weapon
     /// </summary>
-    private BaddieWeapon _baddieWeapon;
+    private MissileTurret _baddieWeapon;
 
     // Use this for initialization
     void Start () {
-        _baddieWeapon = GetComponent<BaddieWeapon>();
+        _baddieWeapon = GetComponent<MissileTurret>();
         if (_baddieWeapon == null) {
             throw new MissingReferenceException();
         }
@@ -35,7 +35,7 @@ public class MissileTurretAIController : MonoBehaviour {
             return;
         } else {
             //Super simple - change later
-            _baddieWeapon.ShouldShoot = (Vector2.Distance(Target.position, transform.position) <= 10);
+            _baddieWeapon.ShouldShoot = (Vector2.Distance(Target.position, transform.position) <= 20);
         }
     }
 
