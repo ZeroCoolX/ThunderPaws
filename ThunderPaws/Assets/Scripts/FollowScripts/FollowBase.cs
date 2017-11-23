@@ -35,7 +35,7 @@ public class FollowBase : MonoBehaviour {
     /// <summary>
     /// Indicates offset from the moddle based on facing/moving direction
     /// </summary>
-    protected float OffsetX = 0.25f;
+    protected float OffsetX = 0.15f;
     protected Vector3 LastTargetPosition;
     protected Vector3 CurrentVelocity;
     protected Vector3 LookAheadPos;

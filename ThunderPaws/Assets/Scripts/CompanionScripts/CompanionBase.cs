@@ -68,12 +68,12 @@ public class CompanionBase : MonoBehaviour {
     public bool Idle = true;
 
     void Start () {
-        var weaponTransform = transform.FindChild("Weapon");
+        var weaponTransform = transform.Find("Weapon");
         if(weaponTransform != null) {
             _companionWeapon = weaponTransform.GetComponent<CompanionWeapon>();
         }
 
-        _companionOrigin = Leader.FindChild("CompanionOrigin");
+        _companionOrigin = Leader.Find("CompanionOrigin");
         if (_companionOrigin == null) {
             //We have a problem 
             Debug.LogError("Could not find CompanionOrigin on: " + Leader.name);

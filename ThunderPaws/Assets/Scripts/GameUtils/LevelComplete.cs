@@ -31,6 +31,7 @@ public class LevelComplete : MonoBehaviour {
         if (!_completedLevel) {
             if (Target == null) {
                 FindTarget(TargetName);
+                return;
             }
             //Raycast to check if we could potentially the target
             RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, Target.position - transform.position);

@@ -88,6 +88,7 @@ public class Bullet : BulletBase {
                 }
                 break;
         }
+        print("Hit object: " + hitObject.gameObject.tag);
         if (!hitObject.gameObject.tag.Equals("ROCKETJUMPTRIGGER")) {
             //Mask it so when we hit something the particles shoot OUT from it.
             Transform hitParticles = Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, TargetNormal)) as Transform;

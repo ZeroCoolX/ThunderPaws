@@ -46,7 +46,7 @@ namespace UnityStandardAssets._2D
             m_CeilingCheck = transform.Find("CeilingCheck");
             m_Anim = GetComponent<Animator>();
             m_Rigidbody2D = GetComponent<Rigidbody2D>();
-            playerGraphics = transform.FindChild("Graphics");
+            playerGraphics = transform.Find("Graphics");
             if (playerGraphics == null) {
                 //couldn't find the graphics object
                 Debug.LogError("PlatformCharacter2D.cs - No player graphics detected as a child of the player. This is bad");

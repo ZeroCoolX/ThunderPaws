@@ -17,6 +17,11 @@ public abstract class BaddieBaseAIController : MonoBehaviour {
     /// </summary>
     protected string _targetTag = "Player";
     /// <summary>
+    /// Specifies how much to recalculate the arm position by in the opposite direction when we change facing directions.
+    /// This is because the arm doesn't sit in the exact middle of the body and thus when we invert the x value, the arm would jut out further than the body
+    /// </summary>
+    public float ArmFacingOffset = 0.3f;
+    /// <summary>
     /// Reference to graphics for rotatipn/flipping
     /// </summary>
     public Transform BaddieGraphics;
@@ -44,14 +49,14 @@ public abstract class BaddieBaseAIController : MonoBehaviour {
     protected void InitializeAIValues(string weaponName) {
         _weaponName = weaponName;
 
-        BaddieGraphics = transform.FindChild("Graphics");
+        BaddieGraphics = transform.Find("Graphics");
         if (BaddieGraphics == null) {
             //couldn't find player graphics 
             Debug.LogError("Cannot find Graphics on baddie");
             throw new MissingReferenceException();
         }
         //Need a reference to the weapon attached to the object so we can tell it when and what to attack
-        var weaponTransform = ArmRotationAxis.FindChild(_weaponName);
+        var weaponTransform = ArmRotationAxis.Find(_weaponName);
         if (weaponTransform != null) {
             _baddieWeapon = weaponTransform.GetComponent<BaddieWeapon>();
             _baddieWeapon.AttackTarget = Target;
@@ -101,10 +106,10 @@ public abstract class BaddieBaseAIController : MonoBehaviour {
         //The offset allows the arm to stay in place when left or right. Otherwise it jutts out when facing left because its flipping scale based on the rotational axis
         if (theScale.y < 0f) {
             theScale = ArmRotationAxis.transform.localPosition;
-            theScale.x += 0.3f;
+            theScale.x += ArmFacingOffset;
         } else {
             theScale = ArmRotationAxis.transform.localPosition;
-            theScale.x -= 0.3f;
+            theScale.x -= ArmFacingOffset;
         }
         ArmRotationAxis.transform.localPosition = theScale;
     }

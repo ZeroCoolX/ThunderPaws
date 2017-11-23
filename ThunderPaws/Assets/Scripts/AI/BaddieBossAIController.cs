@@ -26,7 +26,9 @@ public class BaddieBossAIController : BaddieBaseAIController {
             }
             return;
         }
-        _baddieWeapon.ShouldShoot = true;
+        if (Vector2.Distance(Target.transform.position, transform.position) <= 50) {
+            _baddieWeapon.ShouldShoot = true;
+        }
     }
 
     // Update is called once per frame
@@ -40,7 +42,9 @@ public class BaddieBossAIController : BaddieBaseAIController {
             return;
         }
         LockOnTarget();
-        _baddieWeapon.ShouldShoot = true;
+        if (Vector2.Distance(Target.transform.position, transform.position) <= 50) {
+            _baddieWeapon.ShouldShoot = true;
+        }
     }
 
 

@@ -44,7 +44,7 @@ public class BaddieAI : MonoBehaviour {
     }
 
     private void Start() {
-        BaddieGraphics = transform.FindChild("Graphics");
+        BaddieGraphics = transform.Find("Graphics");
         if (BaddieGraphics == null) {
             //couldn't find player graphics 
             Debug.LogError("Cannot find Graphics on baddie");

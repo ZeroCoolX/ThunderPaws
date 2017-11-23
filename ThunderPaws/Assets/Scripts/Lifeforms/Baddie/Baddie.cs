@@ -19,6 +19,10 @@ public class Baddie : LifeformBase {
     /// </summary>
     public Transform PickupableDrop;
     /// <summary>
+    /// Generated on Start to determine what to drop when this baddie dies
+    /// </summary>
+    private PickupableEnum _pickupEnum;
+    /// <summary>
     /// Amount of the object to drop on death
     /// </summary>
     public int PickupableDropAmount = 10;
@@ -165,16 +169,16 @@ public class Baddie : LifeformBase {
         }
         GeneratePickupable();
 
-        _graphics = transform.FindChild("Graphics");
+        _graphics = transform.Find("Graphics");
         if(_graphics == null) {
             throw new MissingMemberException();
         }else {
-            _wanderGraphics = _graphics.FindChild("BaddieWanderArm");
+            _wanderGraphics = _graphics.Find("BaddieWanderArm");
             if(_wanderGraphics == null) {
                 throw new MissingMemberException();
             }
         }
-        _armGraphics = transform.FindChild("arm");
+        _armGraphics = transform.Find("arm");
         if(_armGraphics == null) {
             throw new MissingMemberException();
         }
@@ -228,11 +232,8 @@ public class Baddie : LifeformBase {
     private void GeneratePickupable() {
         //Set the sprite renderer we need for our pickupable drop because it is not set at compile time
         //We want a ver small percent chance of it to be health otherwise its too easy
-        int pickup = UnityEngine.Random.Range(1, 12);
-        PickupableEnum pickupEnum = pickup % 3 == 0 ? PickupableEnum.HEALTH : PickupableEnum.CURRENCY;
-        print("pickupable = " + pickupEnum);
-        PickupableDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[pickupEnum];
-        PickupableDrop.GetComponent<Pickupable>().Pickup = pickupEnum;
+        int pickup = UnityEngine.Random.Range(3, 13);
+        _pickupEnum = pickup % 3 == 0 ? PickupableEnum.HEALTH : PickupableEnum.CURRENCY;
     }
 
     /// <summary>
@@ -244,6 +245,8 @@ public class Baddie : LifeformBase {
             //Drop pickupable and play sound
             _audioManager.playSound(PickupableDropSoundName);
             var pickupable = Instantiate(PickupableDrop, transform.position, transform.rotation) as Transform;
+            pickupable.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[_pickupEnum];
+            pickupable.GetComponent<Pickupable>().Pickup = _pickupEnum;
             pickupable.GetComponent<Pickupable>().TargetName = "Player";
             GameMaster.KillBaddie(this);
         }

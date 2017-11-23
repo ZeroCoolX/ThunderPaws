@@ -22,7 +22,7 @@ public class Controller2D : RaycastController_old {
         base.Start();
         collisions.faceDir = 1;
         animator = GetComponent<Animator>();
-        playerGraphics = transform.FindChild("Graphics");
+        playerGraphics = transform.Find("Graphics");
         if(playerGraphics == null) {
             //couldn't find player graphics 
             Debug.LogError("Cannot find Graphics on player");

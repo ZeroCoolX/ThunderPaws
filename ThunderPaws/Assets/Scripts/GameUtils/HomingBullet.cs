@@ -32,14 +32,24 @@ public class HomingBullet : BulletBase {
     /// If this bullet type is a homing type, it needs a target
     /// </summary>
     public Transform Target;
-
+    /// <summary>
+    /// Reference to the velocit of the missile
+    /// </summary>
     private Vector3 _veloicty;
+    /// <summary>
+    /// Reference to the audio manager
+    /// </summary>
+    private AudioManager _audioManager;
 
     private void Start() {
         base.Start();
         Target = GameObject.FindGameObjectWithTag("Player").transform;
         _freeFlyTime = Time.time + FreeFlyDelay;
         MaxLifetime = 30;
+        _audioManager = AudioManager.instance;
+        if(_audioManager == null) {
+            throw new MissingComponentException("No audio manager found in the scene");
+        }
     }
 
     void Update() {
@@ -55,7 +65,7 @@ public class HomingBullet : BulletBase {
         if (possibleHit.collider != null) {
             //Mini raycast to check handle ellusive targets
             RaycastHit2D distCheck = Physics2D.Raycast(transform.position, TargetDirection, 0.2f, WhatToHit);
-            if (distCheck.collider != null) {
+            if (distCheck.collider != null && distCheck.collider.gameObject.tag != "OBSTACLE-THROUGH") {
                 HitTarget(transform.position, distCheck.collider);
                 //We don't want to stop the bullet trajectory if we're hitting the trigger.
                 //If we're on the ground - which is the only time the rocket jump boost can be applied, the bullet should hit the ground instead of the trigger
@@ -71,7 +81,7 @@ public class HomingBullet : BulletBase {
             if (dir.magnitude <= distanceThisFrame) {
                 //Make sure the player didn't dodge out of the way
                 distCheck = Physics2D.Raycast(transform.position, TargetDirection, 0.2f, WhatToHit);
-                if (distCheck.collider != null) {
+                if (distCheck.collider != null && distCheck.collider.gameObject.tag != "OBSTACLE-THROUGH") {
                     HitTarget(transform.position, distCheck.collider);
                     //We don't want to stop the bullet trajectory if we're hitting the trigger.
                     //If we're on the ground - which is the only time the rocket jump boost can be applied, the bullet should hit the ground instead of the trigger
@@ -154,6 +164,7 @@ public class HomingBullet : BulletBase {
             Transform hitParticles = Instantiate(HitPrefab, hitPos, Quaternion.FromToRotation(Vector3.up, TargetNormal)) as Transform;
             //Destroy hit particles
             Destroy(hitParticles.gameObject, 1f);
+            _audioManager.playSound("RocketExplosion");
             Destroy(gameObject);
         }
     }

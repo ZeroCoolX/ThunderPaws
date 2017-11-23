@@ -19,6 +19,11 @@ public class Player : LifeformBase {
     /// Animator reference for sprite animations
     /// </summary>
     private Animator Animator;
+    /// <summary>
+    /// Specifies how much to recalculate the arm position by in the opposite direction when we change facing directions.
+    /// This is because the arm doesn't sit in the exact middle of the body and thus when we invert the x value, the arm would jut out further than the body
+    /// </summary>
+    public float ArmFacingOffset = 0.3f;
 
     /// <summary>
     /// Amount to shake the camera by
@@ -118,12 +123,12 @@ public class Player : LifeformBase {
     /// </summary>
     void Start() {
         //Validate graphics sprite and Arm are set
-        PlayerGraphics = transform.FindChild("Graphics");
+        PlayerGraphics = transform.Find("Graphics");
         if (PlayerGraphics == null) {
             Debug.LogError("No Graphics on player found");
             throw new UnassignedReferenceException();
         }
-        PlayerArm = transform.FindChild("arm");
+        PlayerArm = transform.Find("arm");
         if (PlayerArm == null) {
             Debug.LogError("No Player Arm on player found");
             throw new UnassignedReferenceException();
@@ -133,7 +138,7 @@ public class Player : LifeformBase {
             Debug.LogError("No Animator on player found");
             throw new MissingComponentException();
         }
-        CompanionAnchor = transform.FindChild("CompanionOrigin");
+        CompanionAnchor = transform.Find("CompanionOrigin");
         if (CompanionAnchor == null) {
             //This might be okay because they won't always have a companion
             Debug.Log("CompanionOrigin was null");
@@ -141,7 +146,7 @@ public class Player : LifeformBase {
             CalculateCompanionFlipOffset();
         }
 
-        //Set all physics values
+        //Set all physics values 
         InitializePhysicsValues(8f, 4f, 1f, 0.4f, 0.2f, 0.1f);
 
         //Set the PlayerStats singleton and initialize
@@ -200,6 +205,7 @@ public class Player : LifeformBase {
         }
         CalculateVelocityOffInput();
         ApplyGravity();
+        Animator.SetFloat("vSpeed", Velocity.y);
         Controller.Move(Velocity * Time.deltaTime, DirectionalInput);
         CalculatePlayerFacing();
     }
@@ -226,7 +232,7 @@ public class Player : LifeformBase {
         //check if user - or NPC - is trying to jump and is standing on the ground
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W)) && Controller.Collisions.FromBelow) {
             //If they're trying to rocket jump...LET THEM
-            Velocity.y = MaxJumpVelocity + (_rocketJumpInitiated ? _rocketJumpBoost : 0f);
+            Velocity.y = MaxJumpVelocity + _rocketJumpBoost;// (_rocketJumpInitiated ? _rocketJumpBoost : 0f);
         }
         float targetVelocityX = DirectionalInput.x * MoveSpeed;
         Velocity.x = Mathf.SmoothDamp(Velocity.x, targetVelocityX, ref VelocityXSmoothing, Controller.Collisions.FromBelow ? AccelerationTimeGrounded : AccelerationTimeAirborne);
@@ -324,7 +330,7 @@ public class Player : LifeformBase {
             }
         }
         //Multiply by input so animation plays only when input is supplied instead of all the time because its a moving platform
-        Animator.SetFloat("Speed", Mathf.Max(Mathf.Abs(Velocity.x), Mathf.Abs(Velocity.y)) * (DirectionalInput.Equals(Vector2.zero) ? 0 : 1));
+        Animator.SetFloat("Speed", Mathf.Max(Mathf.Abs(Velocity.x), Mathf.Abs(Velocity.y)) * (DirectionalInput.Equals(Vector2.zero) ? 0 : 1));        //Multiply by input so animation plays only when input is supplied instead of all the time because its a moving platform
     }
 
     /// <summary>
@@ -368,10 +374,10 @@ public class Player : LifeformBase {
         //The offset allows the arm to stay in place when left or right. Otherwise it jutts out when facing left because its flipping scale based on the rotational axis
         if (theScale.y < 0f) {
             theScale = PlayerArm.transform.localPosition;
-            theScale.x += 0.3f;
+            theScale.x += ArmFacingOffset;
         } else {
             theScale = PlayerArm.transform.localPosition;
-            theScale.x -= 0.3f;
+            theScale.x -= ArmFacingOffset;
         }
         PlayerArm.transform.localPosition = theScale;
     }
@@ -415,7 +421,7 @@ public class Player : LifeformBase {
     /// Create a Companion and set all the necessary properties
     /// </summary>
     private void CreateCompanion() {
-        var companionOrigin = transform.FindChild("CompanionOrigin").transform;
+        var companionOrigin = transform.Find("CompanionOrigin").transform;
         var companion = Instantiate(CompanionMap.Companions[CompanionEnum.BASE], companionOrigin.position, transform.rotation);
         companion.GetComponent<CompanionBase>().Leader = transform;
         companion.GetComponent<CompanionFollow>().Target = companionOrigin;
@@ -426,7 +432,7 @@ public class Player : LifeformBase {
     /// </summary>
     public void OnJumpInputUp() {
         if (Velocity.y > MinJumpVelocity) {
-            Velocity.y = MinJumpVelocity + (_rocketJumpInitiated ? _rocketJumpBoost : 0f);
+            Velocity.y = MinJumpVelocity + _rocketJumpBoost;//(_rocketJumpInitiated ? _rocketJumpBoost : 0f);
         }
     }
 

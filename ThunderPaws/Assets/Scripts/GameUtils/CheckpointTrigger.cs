@@ -36,7 +36,7 @@ public class CheckpointTrigger : MonoBehaviour {
             //Raycast to check if we could potentially the target
             RaycastHit2D possibleHit = Physics2D.Raycast(transform.position, Target.position - transform.position);
             if (possibleHit.collider != null) {
-                RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Target.position - transform.position, 0.75f, WhatToHit);
+                RaycastHit2D distCheck = Physics2D.Raycast(transform.position, Target.position - transform.position, 3f, WhatToHit);
                 if (distCheck.collider != null) {
                     ApplyCheckpoint(distCheck.collider);
                     return;

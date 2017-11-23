@@ -180,16 +180,16 @@ public class BaddieBoss : LifeformBase {
         DeathDrop.GetComponent<SpriteRenderer>().sprite = PickupableSpriteMap.Sprites[PickupableEnum.BAZOOKA];
         DeathDrop.GetComponent<Pickupable>().Pickup = PickupableEnum.BAZOOKA;
 
-        _graphics = transform.FindChild("Graphics");
+        _graphics = transform.Find("Graphics");
         if (_graphics == null) {
             throw new MissingMemberException();
         } else {
-            _wanderGraphics = _graphics.FindChild("BaddieWanderArm");
+            _wanderGraphics = _graphics.Find("BaddieWanderArm");
             if (_wanderGraphics == null) {
                 throw new MissingMemberException();
             }
         }
-        _armGraphics = transform.FindChild("arm");
+        _armGraphics = transform.Find("arm");
         if (_armGraphics == null) {
             throw new MissingMemberException();
         }

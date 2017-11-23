@@ -34,22 +34,21 @@ namespace UnityStandardAssets._2D {
             Vector3 aheadTargetPos = Target.position + LookAheadPos + Vector3.forward * OffsetZ;
             Vector3 newPos = Vector3.SmoothDamp(transform.position, aheadTargetPos, ref CurrentVelocity, Dampening);
             //clamp the camera - value doesn't go below or above 
-            //if(xMoveDelta != 0) {
-            //    if (PlayerScript.FacingRight && Mathf.Sign(xMoveDelta) > 0 || !PlayerScript.FacingRight && Mathf.Sign(xMoveDelta) < 0) {
-            //        _currentXOffset = OffsetX * Mathf.Sign(xMoveDelta);
-            //    } else {
-            //        _currentXOffset = OffsetX * Mathf.Sign(_currentXOffset);
-            //    }
-            //    newPos = new Vector3(newPos.x + _currentXOffset, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
-            //    transform.position = newPos;
+            if (xMoveDelta != 0) {
+                if (PlayerScript.FacingRight && Mathf.Sign(xMoveDelta) > 0 || !PlayerScript.FacingRight && Mathf.Sign(xMoveDelta) < 0) {
+                    _currentXOffset = OffsetX * Mathf.Sign(xMoveDelta);
+                } else {
+                    _currentXOffset = OffsetX * Mathf.Sign(_currentXOffset);
+                }
+                newPos = new Vector3(newPos.x + _currentXOffset, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
+                transform.position = newPos;
 
-            //    LastTargetPosition = Target.position;
-            //}else {
+                LastTargetPosition = Target.position;
+            } else {
                 newPos = new Vector3(newPos.x, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
-            //}
-            //TODO: The camera offset to allow more space in front of the player is not great-  but manageable atm - must fix in the future
-            //newPos = new Vector3(newPos.x + _currentXOffset, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
-           // newPos = new Vector3(newPos.x, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
+            }
+            //TODO: The camera offset to allow more space in front of the player is not great - but manageable atm -must fix in the future
+            newPos = new Vector3(newPos.x + _currentXOffset, Mathf.Clamp(newPos.y, YPosClamp, Mathf.Infinity), newPos.z);
 
             transform.position = newPos;
 
